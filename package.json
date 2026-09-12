@@ -1,8 +1,8 @@
 {
   "name": "novera",
   "productName": "Novera",
-  "version": "2.0.0",
-  "description": "A beautiful home for your books",
+  "version": "3.0.0",
+  "description": "A private, open-source Windows EPUB reader",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -19,8 +19,19 @@
     "desktop",
     "windows"
   ],
-  "author": "Novera",
+  "author": "Vasanth Gajavelly",
   "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasanthgajavelly5-sys/Novera.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vasanthgajavelly5-sys/Novera/issues"
+  },
+  "homepage": "https://github.com/vasanthgajavelly5-sys/Novera#readme",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "electron": "^44.3.0",
     "electron-builder": "^26.15.3"
@@ -28,7 +39,8 @@
   "build": {
     "appId": "com.novera.reader",
     "productName": "Novera",
-    "copyright": "Copyright © 2026 Vellune contributors",
+    "copyright": "Copyright © 2026 Vasanth Gajavelly",
+    "artifactName": "${productName}-${version}-Setup.${ext}",
     "directories": {
       "output": "dist"
     },

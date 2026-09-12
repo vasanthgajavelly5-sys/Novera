@@ -1,5 +1,5 @@
 /* =============================================================
-   FOLIO — Panels (TOC, Settings, Annotations, Book Details)
+   NOVERA — Panels (TOC, Settings, Annotations, Book Details)
    ============================================================= */
 
 /* ── TOC Sidebar ─────────────────────────────────────────── */
@@ -78,6 +78,12 @@
 }
 
 .settings-body { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-5); overflow-y: auto; overscroll-behavior: contain; }
+.about-card { padding: var(--sp-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--bg-glass); }
+.about-icon { width: 44px; height: 44px; float: left; margin: 0 var(--sp-3) var(--sp-2) 0; border-radius: 12px; }
+.about-tagline { color: var(--text-secondary); font-family: var(--font-serif); margin-top: 2px; }
+.about-copy { clear: both; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.55; }
+.about-meta { color: var(--text-tertiary); font-size: var(--text-xs); }
+.about-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
 .settings-group { display: flex; flex-direction: column; gap: var(--sp-3); }
 .settings-section-heading { display: flex; flex-direction: column; gap: 3px; }
 .settings-section-heading p { color: var(--text-tertiary); font-size: 0.75rem; line-height: 1.45; }
@@ -544,6 +550,11 @@
 }
 #note-textarea:focus { border-color: var(--accent); }
 #note-textarea::placeholder { color: var(--text-tertiary); }
+
+/* ── Book removal confirmation ──────────────────────────── */
+#delete-book-modal .modal-box { max-width: 460px; }
+.delete-book-message { padding: 0 var(--sp-6) var(--sp-2); color: var(--text-secondary); font-size: 0.875rem; line-height: 1.55; }
+.delete-book-confirm-btn { background: var(--status-error); border-color: var(--status-error); }
 
 /* ── Keyboard shortcut panel (? key) ────────────────────── */
 #shortcuts-modal .modal-box { max-width: 560px; }

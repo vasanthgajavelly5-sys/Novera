@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We are committed to making participation in Vellune welcoming, respectful, and harassment-free for everyone, regardless of background, identity, experience, or viewpoint.
+We are committed to making participation in Novera welcoming, respectful, and harassment-free for everyone, regardless of background, identity, experience, or viewpoint.
 
 ## Expected Behavior
 
@@ -26,4 +26,4 @@ Project maintainers may remove comments, close discussions, or restrict particip
 
 ## Scope
 
-This code applies in project spaces and whenever someone is representing the Vellune project or its community.
+This code applies in project spaces and whenever someone is representing the Novera project or its community.

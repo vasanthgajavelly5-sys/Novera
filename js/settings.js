@@ -1,5 +1,5 @@
 /**
- * Folio — Reader Display Settings (Typography, Spacing, Flow & Layout)
+ * Novera — Reader Display Settings (Typography, Spacing, Flow & Layout)
  */
 
 const ReaderSettings = (() => {
@@ -29,7 +29,7 @@ const ReaderSettings = (() => {
   }
 
   async function init() {
-    const saved = await FolioDB.getPref('readerSettings', DEFAULT_SETTINGS);
+    const saved = await NoveraDB.getPref('readerSettings', DEFAULT_SETTINGS);
     currentSettings = normalizeSettings(saved);
     updateUI();
     bindEvents();
@@ -78,12 +78,13 @@ const ReaderSettings = (() => {
     const spreadSingle = document.getElementById('spread-single-btn');
     if (spreadAuto) spreadAuto.classList.toggle('active', currentSettings.spread === 'auto');
     if (spreadSingle) spreadSingle.classList.toggle('active', currentSettings.spread === 'none');
+
   }
 
   function setSetting(key, val, shouldApply = true) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) return;
     currentSettings = normalizeSettings({ ...currentSettings, [key]: val });
-    FolioDB.setPref('readerSettings', currentSettings);
+    NoveraDB.setPref('readerSettings', currentSettings);
     updateUI();
 
     if (shouldApply && typeof EpubLoader !== 'undefined') {
@@ -141,6 +142,7 @@ const ReaderSettings = (() => {
       });
     }
 
+
     // Flow mode buttons
     const flowPaginated = document.getElementById('flow-paginated-btn');
     const flowScrolled = document.getElementById('flow-scrolled-btn');
@@ -193,7 +195,7 @@ const ReaderSettings = (() => {
     if (resetButton) {
       resetButton.addEventListener('click', () => {
         currentSettings = { ...DEFAULT_SETTINGS };
-        FolioDB.setPref('readerSettings', currentSettings);
+        NoveraDB.setPref('readerSettings', currentSettings);
         updateUI();
         if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) EpubLoader.reRender();
       });

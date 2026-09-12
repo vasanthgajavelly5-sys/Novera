@@ -1,5 +1,5 @@
 /**
- * Folio — Utility Functions & Toast System
+ * Novera — Utility Functions & Toast System
  */
 
 const Utils = {

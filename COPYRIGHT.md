@@ -1,4 +1,4 @@
-Copyright © 2026 Vellune contributors.
+Copyright © 2026 Vasanth Gajavelly.
 
-Vellune is free and open-source software licensed under
+Novera is free and open-source software licensed under
 the GNU General Public License v3.0.

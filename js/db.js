@@ -1,9 +1,10 @@
 /**
- * Folio — IndexedDB Storage Engine (FolioDB)
+ * Novera — IndexedDB Storage Engine
  * Persists EPUB binary data, metadata, reading progress, highlights, and notes.
  */
 
-const FolioDB = (() => {
+const NoveraDB = (() => {
+  // Kept unchanged so existing Folio-era libraries and preferences remain available.
   const DB_NAME = 'FolioReaderDB';
   const DB_VERSION = 1;
   let dbInstance = null;
@@ -45,7 +46,7 @@ const FolioDB = (() => {
       };
 
       request.onerror = (event) => {
-        console.error('Failed to open FolioDB:', event.target.error);
+        console.error('Failed to open NoveraDB:', event.target.error);
         reject(event.target.error);
       };
     });

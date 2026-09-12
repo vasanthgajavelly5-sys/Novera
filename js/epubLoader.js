@@ -1,5 +1,5 @@
 /**
- * Folio — EPUB Engine (epub.js wrapper)
+ * Novera — EPUB Engine (epub.js wrapper)
  * Renders EPUB books, manages TOC, navigation, annotations, and in-book search.
  */
 
@@ -12,6 +12,7 @@ const EpubLoader = (() => {
   let searchResults = [];
   let currentSearchIdx = -1;
   let activeSelection = null; // { cfiRange, text, chapter }
+  let lastNavigationAt = 0;
 
   const HIGHLIGHT_COLORS = {
     yellow: '#FBBF24',
@@ -122,6 +123,7 @@ const EpubLoader = (() => {
       injectIframeStyles(view.document);
       bindIframeKeyboard(view.document);
       bindIframeWheel(view.document);
+      bindIframeNavigation(view.document);
     });
 
     // Text selection inside the EPUB iframe
@@ -152,18 +154,18 @@ const EpubLoader = (() => {
     if (!doc || !doc.head) return;
 
     // Ensure Google Fonts link is present in iframe
-    if (!doc.getElementById('folio-iframe-fonts')) {
+    if (!doc.getElementById('novera-iframe-fonts')) {
       const fontLink = doc.createElement('link');
-      fontLink.id = 'folio-iframe-fonts';
+      fontLink.id = 'novera-iframe-fonts';
       fontLink.rel = 'stylesheet';
       fontLink.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap';
       doc.head.appendChild(fontLink);
     }
 
     // Add base reset and smoothing inside iframe
-    if (!doc.getElementById('folio-iframe-base')) {
+    if (!doc.getElementById('novera-iframe-base')) {
       const style = doc.createElement('style');
-      style.id = 'folio-iframe-base';
+      style.id = 'novera-iframe-base';
       style.textContent = `
         * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         body { margin: 0 !important; }
@@ -191,10 +193,10 @@ const EpubLoader = (() => {
     const lineHeight = settings.lineHeight || 1.6;
     const margin = settings.margin ? `${settings.margin * 3}px` : '30px';
 
-    let styleEl = doc.getElementById('folio-page-custom-style');
+    let styleEl = doc.getElementById('novera-page-custom-style');
     if (!styleEl) {
       styleEl = doc.createElement('style');
-      styleEl.id = 'folio-page-custom-style';
+      styleEl.id = 'novera-page-custom-style';
       doc.head.appendChild(styleEl);
     }
 
@@ -255,8 +257,8 @@ const EpubLoader = (() => {
   }
 
   function bindIframeWheel(doc) {
-    if (!doc || doc.documentElement.dataset.folioWheelBound === 'true') return;
-    doc.documentElement.dataset.folioWheelBound = 'true';
+    if (!doc || doc.documentElement.dataset.noveraWheelBound === 'true') return;
+    doc.documentElement.dataset.noveraWheelBound = 'true';
 
     let gestureLocked = false;
     doc.addEventListener('wheel', (event) => {
@@ -272,6 +274,38 @@ const EpubLoader = (() => {
       }
       setTimeout(() => { gestureLocked = false; }, 280);
     }, { passive: false });
+  }
+
+  function bindIframeNavigation(doc) {
+    if (!doc || doc.documentElement.dataset.noveraNavigationBound === 'true') return;
+    doc.documentElement.dataset.noveraNavigationBound = 'true';
+    let pointerStart = null;
+    const interactive = 'a, button, input, select, textarea, [contenteditable], audio, video, iframe';
+
+    doc.addEventListener('pointerdown', (event) => {
+      pointerStart = { x: event.clientX, y: event.clientY, target: event.target };
+    });
+    doc.addEventListener('pointermove', () => { pointerStart = null; });
+    doc.addEventListener('pointerup', (event) => {
+      const settings = ReaderSettings.getSettings();
+      const start = pointerStart;
+      pointerStart = null;
+      if (settings.mouseNavigation === false || !start || event.button !== 0 ||
+          event.target.closest(interactive) || start.target.closest(interactive) ||
+          doc.defaultView.getSelection()?.toString().trim()) return;
+      if (Math.abs(event.clientX - start.x) > 8 || Math.abs(event.clientY - start.y) > 8) return;
+      const zone = Number(settings.navigationZone || 25) / 100;
+      const width = doc.documentElement.clientWidth || doc.defaultView.innerWidth;
+      if (event.clientX <= width * zone) navigate('previous');
+      else if (event.clientX >= width * (1 - zone)) navigate('next');
+    });
+    doc.addEventListener('pointermove', (event) => {
+      const settings = ReaderSettings.getSettings();
+      if (settings.mouseNavigation === false || settings.navigationHints === false || event.target.closest(interactive)) return;
+      const zone = Number(settings.navigationZone || 25) / 100;
+      const width = doc.documentElement.clientWidth || doc.defaultView.innerWidth;
+      doc.body.style.cursor = event.clientX <= width * zone ? 'w-resize' : event.clientX >= width * (1 - zone) ? 'e-resize' : '';
+    });
   }
 
   function positionSelectionToolbar(iframeWindow, selection) {
@@ -338,9 +372,9 @@ const EpubLoader = (() => {
     // Check if current location is bookmarked
     checkBookmarkStatus(currentCfi);
 
-    // Persist reading progress to FolioDB
+    // Persist reading progress to NoveraDB
     if (currentBookData && currentBookData.id) {
-      FolioDB.updateProgress(currentBookData.id, {
+      NoveraDB.updateProgress(currentBookData.id, {
         currentCfi,
         progressPercent: percent,
         currentChapter
@@ -350,7 +384,7 @@ const EpubLoader = (() => {
 
   async function checkBookmarkStatus(cfi) {
     if (!currentBookData) return;
-    const annotations = await FolioDB.getAnnotations(currentBookData.id);
+    const annotations = await NoveraDB.getAnnotations(currentBookData.id);
     const isBookmarked = annotations.some(a => a.type === 'bookmark' && a.cfiRange === cfi);
     const bmBtn = document.getElementById('bookmark-btn');
     if (bmBtn) {
@@ -493,12 +527,18 @@ const EpubLoader = (() => {
   }
 
   // Navigation
+  function navigate(direction) {
+    if (!rendition || Date.now() - lastNavigationAt < 120) return;
+    lastNavigationAt = Date.now();
+    rendition[direction === 'next' ? 'next' : 'prev']();
+  }
+
   function next() {
-    if (rendition) rendition.next();
+    navigate('next');
   }
 
   function prev() {
-    if (rendition) rendition.prev();
+    navigate('previous');
   }
 
   function goTo(target) {
@@ -522,7 +562,7 @@ const EpubLoader = (() => {
       dateAdded: Date.now()
     };
 
-    await FolioDB.saveAnnotation(annotation);
+    await NoveraDB.saveAnnotation(annotation);
     renderHighlightOnPage(annotation);
     hideSelectionToolbar();
     refreshAnnotationsPanel();
@@ -553,7 +593,7 @@ const EpubLoader = (() => {
   }
 
   async function loadAnnotations(bookId) {
-    const annotations = await FolioDB.getAnnotations(bookId);
+    const annotations = await NoveraDB.getAnnotations(bookId);
     annotations.forEach(ann => {
       if (ann.type === 'highlight' || ann.type === 'note') {
         renderHighlightOnPage(ann);
@@ -567,11 +607,11 @@ const EpubLoader = (() => {
     if (!loc || !loc.start) return;
 
     const cfi = loc.start.cfi;
-    const annotations = await FolioDB.getAnnotations(currentBookData.id);
+    const annotations = await NoveraDB.getAnnotations(currentBookData.id);
     const existing = annotations.find(a => a.type === 'bookmark' && a.cfiRange === cfi);
 
     if (existing) {
-      await FolioDB.deleteAnnotation(existing.id);
+      await NoveraDB.deleteAnnotation(existing.id);
       Utils.toast('Bookmark removed');
     } else {
       const chapter = document.getElementById('progress-chapter').textContent || 'Bookmark';
@@ -586,7 +626,7 @@ const EpubLoader = (() => {
         chapter,
         dateAdded: Date.now()
       };
-      await FolioDB.saveAnnotation(bm);
+      await NoveraDB.saveAnnotation(bm);
       Utils.toast('Page bookmarked', 'success');
     }
 
@@ -599,7 +639,7 @@ const EpubLoader = (() => {
     const listEl = document.getElementById('ann-list-content');
     if (!listEl) return;
 
-    const annotations = await FolioDB.getAnnotations(currentBookData.id);
+    const annotations = await NoveraDB.getAnnotations(currentBookData.id);
     const activeTab = document.querySelector('.ann-tab.active')?.dataset.tab || 'highlights';
 
     let filtered = [];
@@ -661,7 +701,7 @@ const EpubLoader = (() => {
       if (delBtn) {
         delBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          await FolioDB.deleteAnnotation(item.id);
+          await NoveraDB.deleteAnnotation(item.id);
           refreshAnnotationsPanel();
           if (currentBookData) {
             checkBookmarkStatus(rendition?.currentLocation()?.start?.cfi);
@@ -730,9 +770,11 @@ const EpubLoader = (() => {
     results.slice(0, 100).forEach((item, idx) => {
       const div = document.createElement('div');
       div.className = 'search-result';
+      const escapedExcerpt = Utils.escapeHTML(item.excerpt || '');
+      const escapedQuery = Utils.escapeHTML(query);
       div.innerHTML = `
         <div class="search-result-excerpt">
-          ${item.excerpt.replace(new RegExp(`(${escapeRegex(query)})`, 'gi'), '<mark>$1</mark>')}
+          ${escapedExcerpt.replace(new RegExp(`(${escapeRegex(escapedQuery)})`, 'gi'), '<mark>$1</mark>')}
         </div>
       `;
       div.addEventListener('click', () => {
@@ -789,6 +831,7 @@ const EpubLoader = (() => {
     applyTheme,
     applySettings,
     reRender,
+    navigate,
     next,
     prev,
     goTo,

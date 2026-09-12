@@ -1,6 +1,6 @@
-# Contributing to Vellune
+# Contributing to Novera
 
-Thank you for helping improve Vellune, a beautiful home for your books.
+Thank you for helping improve Novera, a private, open-source Windows EPUB reader.
 
 ## Development Setup
 

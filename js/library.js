@@ -1,5 +1,5 @@
 /**
- * Folio — Library Management System
+ * Novera — Library Management System
  * Handles drag-and-drop, EPUB ingestion, IndexedDB persistence,
  * library rendering, search, sort, and sample book generation.
  */
@@ -10,6 +10,7 @@ const Library = (() => {
   let searchQuery = '';
   let isListView = false;
   let activeContextBook = null;
+  let deleteConfirmationResolver = null;
 
   async function init() {
     bindDropAndFileInput();
@@ -19,7 +20,7 @@ const Library = (() => {
   }
 
   async function loadAndRenderBooks() {
-    allBooks = await FolioDB.getAllBooks();
+    allBooks = await NoveraDB.getAllBooks();
     renderLibraryUI();
   }
 
@@ -239,8 +240,8 @@ const Library = (() => {
     };
 
     const handleFileChoice = async () => {
-      if (window.folioDesktop?.openFileDialog) {
-        const result = await window.folioDesktop.openFileDialog();
+      if (window.noveraDesktop?.openFileDialog) {
+        const result = await window.noveraDesktop.openFileDialog();
         showImportErrors(result.errors);
         if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
       } else {
@@ -249,12 +250,12 @@ const Library = (() => {
       }
     };
     const handleFolderChoice = async () => {
-      if (!window.folioDesktop?.openFolderDialog) {
+      if (!window.noveraDesktop?.openFolderDialog) {
         Utils.toast('Folder import is available in the desktop app', 'info');
         return;
       }
       setImportStatus('Scanning folder...');
-      const result = await window.folioDesktop.openFolderDialog();
+      const result = await window.noveraDesktop.openFolderDialog();
       showImportErrors(result.errors);
       if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
       else if (!result.canceled) setImportStatus('No EPUB files found in that folder.');
@@ -289,8 +290,8 @@ const Library = (() => {
     }
 
     // Windows OS launch / Double-click EPUB file listener
-    if (window.folioDesktop && window.folioDesktop.onOpenFile) {
-      window.folioDesktop.onOpenFile(async (filePath) => {
+    if (window.noveraDesktop && window.noveraDesktop.onOpenFile) {
+      window.noveraDesktop.onOpenFile(async (filePath) => {
         Utils.toast('Opening book from Windows...', 'info');
         const existing = allBooks.find(b => b.sourcePath === filePath || b.diskPath === filePath);
         if (existing) {
@@ -299,7 +300,7 @@ const Library = (() => {
         }
 
         try {
-          const file = await window.folioDesktop.readEpubFile(filePath);
+          const file = await window.noveraDesktop.readEpubFile(filePath);
           await processNativeFiles([file]);
           await loadAndRenderBooks();
           const imported = allBooks.find(b => b.sourcePath === file.path);
@@ -372,14 +373,14 @@ const Library = (() => {
         bookData.sourcePath = file.path;
 
         // Persist copy in AppData storage if needed
-        if (window.folioDesktop && window.folioDesktop.saveBookToStorage) {
-          const res = await window.folioDesktop.saveBookToStorage(file.name, file.data);
+        if (window.noveraDesktop && window.noveraDesktop.saveBookToStorage) {
+          const res = await window.noveraDesktop.saveBookToStorage(file.name, file.data);
           if (res && res.success) {
             bookData.diskPath = res.path;
           }
         }
 
-        await FolioDB.saveBook(bookData);
+        await NoveraDB.saveBook(bookData);
         importedCount++;
       } catch (err) {
         console.error('Failed to import EPUB:', file.name, err);
@@ -409,14 +410,14 @@ const Library = (() => {
         if (allBooks.some(book => book.fingerprint && book.fingerprint === bookData.fingerprint)) continue;
 
         // If on desktop, save copy to AppData
-        if (window.folioDesktop && window.folioDesktop.saveBookToStorage) {
-          const res = await window.folioDesktop.saveBookToStorage(file.name, arrayBuffer);
+        if (window.noveraDesktop && window.noveraDesktop.saveBookToStorage) {
+          const res = await window.noveraDesktop.saveBookToStorage(file.name, arrayBuffer);
           if (res && res.success) {
             bookData.diskPath = res.path;
           }
         }
 
-        await FolioDB.saveBook(bookData);
+        await NoveraDB.saveBook(bookData);
         importedCount++;
       } catch (err) {
         console.error('Failed to import EPUB:', file.name, err);
@@ -590,6 +591,20 @@ const Library = (() => {
     const ctxRead = document.getElementById('ctx-read');
     const ctxDetails = document.getElementById('ctx-details');
     const ctxDelete = document.getElementById('ctx-delete');
+    const deleteModal = document.getElementById('delete-book-modal');
+    const cancelDeleteButton = document.getElementById('cancel-delete-book-btn');
+    const confirmDeleteButton = document.getElementById('confirm-delete-book-btn');
+    const resolveDeleteConfirmation = (confirmed) => {
+      deleteModal?.classList.add('hidden');
+      const resolve = deleteConfirmationResolver;
+      deleteConfirmationResolver = null;
+      resolve?.(confirmed);
+    };
+    cancelDeleteButton?.addEventListener('click', () => resolveDeleteConfirmation(false));
+    confirmDeleteButton?.addEventListener('click', () => resolveDeleteConfirmation(true));
+    deleteModal?.addEventListener('click', (event) => {
+      if (event.target === deleteModal) resolveDeleteConfirmation(false);
+    });
 
     // Close context menu on window click
     window.addEventListener('click', () => {
@@ -611,8 +626,8 @@ const Library = (() => {
     const ctxReveal = document.getElementById('ctx-reveal');
     if (ctxReveal) {
       ctxReveal.addEventListener('click', () => {
-        if (activeContextBook && activeContextBook.diskPath && window.folioDesktop) {
-          window.folioDesktop.showInExplorer(activeContextBook.diskPath);
+        if (activeContextBook && activeContextBook.diskPath && window.noveraDesktop) {
+          window.noveraDesktop.showInExplorer(activeContextBook.diskPath);
         } else {
           Utils.toast('File location on disk not available', 'info');
         }
@@ -710,10 +725,22 @@ const Library = (() => {
   }
 
   async function deleteBook(id) {
-    if (!confirm('Are you sure you want to remove this book from your library?')) return;
-    await FolioDB.deleteBook(id);
+    if (!await confirmBookRemoval()) return;
+    const book = await NoveraDB.getBook(id);
+    await NoveraDB.deleteBook(id);
+    if (book?.diskPath && window.noveraDesktop?.deleteBookFromStorage) {
+      await window.noveraDesktop.deleteBookFromStorage(book.diskPath);
+    }
     Utils.toast('Book removed from library', 'info');
     await loadAndRenderBooks();
+  }
+
+  function confirmBookRemoval() {
+    const modal = document.getElementById('delete-book-modal');
+    if (!modal) return Promise.resolve(false);
+    modal.classList.remove('hidden');
+    document.getElementById('cancel-delete-book-btn')?.focus();
+    return new Promise(resolve => { deleteConfirmationResolver = resolve; });
   }
 
   function stripHTML(html) {
@@ -747,7 +774,7 @@ const Library = (() => {
     <dc:title>Alice's Adventures in Wonderland</dc:title>
     <dc:creator>Lewis Carroll</dc:creator>
     <dc:language>en</dc:language>
-    <dc:identifier id="BookId">urn:uuid:folio-sample-alice-1865</dc:identifier>
+    <dc:identifier id="BookId">urn:uuid:novera-sample-alice-1865</dc:identifier>
     <dc:description>The classic 1865 English tale of Alice tumbling down a rabbit hole into a fantastical, whimsical world of curious creatures.</dc:description>
     <dc:publisher>Novera Classics</dc:publisher>
   </metadata>
@@ -769,7 +796,7 @@ const Library = (() => {
       zip.file('OEBPS/toc.ncx', `<?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:folio-sample-alice-1865"/>
+    <meta name="dtb:uid" content="urn:uuid:novera-sample-alice-1865"/>
   </head>
   <docTitle><text>Alice's Adventures in Wonderland</text></docTitle>
   <navMap>
@@ -871,7 +898,7 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
         currentChapter: 'Chapter I: Down the Rabbit-Hole'
       };
 
-      await FolioDB.saveBook(sampleBook);
+      await NoveraDB.saveBook(sampleBook);
       Utils.toast('Sample book added! Opening now...', 'success');
       await loadAndRenderBooks();
       App.openReader(sampleBook.id);

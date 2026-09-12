@@ -1,5 +1,5 @@
 /**
- * Folio — Main Application Coordinator
+ * Novera — Main Application Coordinator
  * Boots app, manages view transitions, drawer panels, modals, and hotkeys.
  */
 
@@ -14,6 +14,11 @@ const App = (() => {
     await ThemeManager.init();
     await ReaderSettings.init();
     await Library.init();
+
+    window.noveraDesktop?.getVersion?.().then(version => {
+      const versionEl = document.getElementById('about-version');
+      if (versionEl) versionEl.textContent = version;
+    }).catch(() => {});
 
     bindNavigationEvents();
     bindDrawersAndModals();
@@ -47,7 +52,7 @@ const App = (() => {
   }
 
   async function openReader(bookId) {
-    const book = await FolioDB.getBook(bookId);
+    const book = await NoveraDB.getBook(bookId);
     if (!book) {
       Utils.toast('Could not find book in storage', 'error');
       return;
@@ -110,9 +115,9 @@ const App = (() => {
     const entering = !focusMode;
     setFocusMode(entering);
 
-    if (window.folioDesktop?.toggleNativeFullscreen) {
-      const isNative = await window.folioDesktop.isNativeFullscreen();
-      if (isNative !== entering) await window.folioDesktop.toggleNativeFullscreen();
+    if (window.noveraDesktop?.toggleNativeFullscreen) {
+      const isNative = await window.noveraDesktop.isNativeFullscreen();
+      if (isNative !== entering) await window.noveraDesktop.toggleNativeFullscreen();
       return;
     }
 
@@ -142,7 +147,7 @@ const App = (() => {
       if (!document.fullscreenElement && !nativeFullscreen) setFocusMode(false);
     });
 
-    window.folioDesktop?.onNativeFullscreenChanged((isFullscreen) => {
+    window.noveraDesktop?.onNativeFullscreenChanged((isFullscreen) => {
       nativeFullscreen = isFullscreen;
       setFocusMode(isFullscreen);
     });
@@ -380,8 +385,8 @@ const App = (() => {
         if (focusMode || nativeFullscreen || document.fullscreenElement) {
           e.preventDefault();
           setFocusMode(false);
-          if (nativeFullscreen && window.folioDesktop?.toggleNativeFullscreen) {
-            window.folioDesktop.toggleNativeFullscreen();
+          if (nativeFullscreen && window.noveraDesktop?.toggleNativeFullscreen) {
+            window.noveraDesktop.toggleNativeFullscreen();
           } else if (document.fullscreenElement && document.exitFullscreen) {
             document.exitFullscreen();
           }
@@ -410,12 +415,12 @@ const App = (() => {
 
       // Reader shortcuts
       if (activeView === 'reader') {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key.toLowerCase() === 'j') {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key.toLowerCase() === 'j' || (e.key === ' ' && !e.shiftKey)) {
           if (!e.shiftKey) {
             e.preventDefault();
             EpubLoader.next();
           }
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey) || e.key.toLowerCase() === 'k') {
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key.toLowerCase() === 'k' || (e.key === ' ' && e.shiftKey)) {
           e.preventDefault();
           EpubLoader.prev();
         } else if (e.key.toLowerCase() === 't') {

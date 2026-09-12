@@ -6,6 +6,9 @@ dist/
 
 # Test corpus / EPUB library
 Master_EPUB_Library_All/
+*.epub
+corpus-inventory.txt
+corpus-failures.txt
 
 # Logs
 logs/
@@ -14,6 +17,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Local configuration, certificates, and signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
 # OS and Editor files
 .DS_Store
 Thumbs.db
@@ -21,4 +33,3 @@ ehthumbs.db
 [Dd]esktop.ini
 .vscode/
 .idea/
-

@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('folioDesktop', {
+contextBridge.exposeInMainWorld('noveraDesktop', {
   isDesktop: true,
   platform: process.platform,
 

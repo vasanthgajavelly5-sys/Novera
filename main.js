@@ -5,6 +5,7 @@ const JSZip = require('jszip');
 
 let mainWindow = null;
 let pendingOpenFile = null;
+const pendingEpubReadPaths = new Set();
 
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -43,7 +44,16 @@ function dispatchOpenFile(filePath) {
     pendingOpenFile = filePath;
     return;
   }
+  pendingEpubReadPaths.add(path.resolve(filePath));
   mainWindow.webContents.send('open-file-from-os', filePath);
+}
+
+function isManagedBookPath(filePath) {
+  if (typeof filePath !== 'string') return false;
+  const storageDir = path.resolve(getBooksStorageDir());
+  const resolvedPath = path.resolve(filePath);
+  const relativePath = path.relative(storageDir, resolvedPath);
+  return Boolean(relativePath) && relativePath !== '..' && !relativePath.startsWith(`..${path.sep}`) && !path.isAbsolute(relativePath);
 }
 
 // Ensure AppData storage directory exists
@@ -107,7 +117,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false,
+      sandbox: true,
       webSecurity: true
     }
   });
@@ -267,7 +277,7 @@ async function validateEpubBuffer(buffer) {
 
 // Reveal in Windows File Explorer
 ipcMain.handle('shell:show-in-folder', (_event, targetPath) => {
-  if (targetPath && fs.existsSync(targetPath)) {
+  if (isManagedBookPath(targetPath) && fs.existsSync(targetPath)) {
     shell.showItemInFolder(targetPath);
     return true;
   }
@@ -275,13 +285,18 @@ ipcMain.handle('shell:show-in-folder', (_event, targetPath) => {
 });
 
 // Save copy of book in AppData storage
-ipcMain.handle('fs:save-book', (_event, { fileName, buffer }) => {
+ipcMain.handle('fs:save-book', async (_event, { fileName, buffer }) => {
   try {
+    if (typeof fileName !== 'string' || !fileName.toLowerCase().endsWith('.epub')) {
+      throw new Error('Only EPUB files can be stored');
+    }
+    const bookBuffer = Buffer.from(buffer);
+    await validateEpubBuffer(bookBuffer);
     const storageDir = getBooksStorageDir();
     // Sanitize filename
-    const safeName = fileName.replace(/[/\\?%*:|"<>]/g, '_');
+    const safeName = path.basename(fileName).replace(/[/\\?%*:|"<>]/g, '_');
     const destPath = path.join(storageDir, safeName);
-    fs.writeFileSync(destPath, Buffer.from(buffer));
+    fs.writeFileSync(destPath, bookBuffer);
     return { success: true, path: destPath };
   } catch (e) {
     console.error('Failed to persist book to disk:', e);
@@ -292,7 +307,7 @@ ipcMain.handle('fs:save-book', (_event, { fileName, buffer }) => {
 // Delete book from disk
 ipcMain.handle('fs:delete-book', (_event, filePath) => {
   try {
-    if (filePath && fs.existsSync(filePath)) {
+    if (isManagedBookPath(filePath) && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       return true;
     }
@@ -311,6 +326,9 @@ ipcMain.handle('fs:read-epub', (_event, filePath) => {
   }
 
   const resolvedPath = path.resolve(filePath);
+  if (!pendingEpubReadPaths.delete(resolvedPath)) {
+    throw new Error('This EPUB was not opened by the operating system');
+  }
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isFile()) {
     throw new Error('The EPUB file does not exist');
   }

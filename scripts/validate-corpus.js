@@ -28,6 +28,11 @@ async function validate(filePath) {
 }
 
 (async () => {
+  if (!fs.existsSync(corpusDir)) {
+    console.log(`Corpus not found: ${corpusDir}`);
+    console.log('Skipping optional corpus validation.');
+    return;
+  }
   const files = findEpubs(corpusDir);
   const failures = [];
   for (const filePath of files) {

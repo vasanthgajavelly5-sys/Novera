@@ -1,95 +1,85 @@
 # Novera
 
-**A beautiful home for your books**
+> A calm, private home for your EPUB library on Windows.
 
-Novera is an independent Windows desktop EPUB library and reader. It keeps books, reading progress, bookmarks, highlights, notes, themes, and preferences on the local machine.
+Novera is a free and open-source Windows desktop reader for EPUB books. It keeps your library, reading progress, highlights, notes, themes, and preferences on your computer—without an account or cloud library.
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D4?logo=windows&logoColor=white)](#install-on-windows)
 
 ## Features
 
-- A focused library with search, sorting, grid/list views, covers, recent reading, and progress.
-- Paginated EPUB reading with table of contents, in-book search, bookmarks, highlights, notes, themes, typography, and layout controls.
-- Single EPUB import, recursive folder import, drag and drop, and Windows EPUB file association opening.
-- Native Windows window state, fullscreen, dialogs, and packaged-app storage.
-- Safe duplicate handling and per-file import errors.
+- Browse a focused local library with cover art, search, sorting, grid and list views, reading progress, and continue-reading.
+- Read EPUB 2 and EPUB 3 books in paginated or scrolling layouts.
+- Adjust themes, typography, spacing, margins, alignment, and page spread for a more comfortable reading experience.
+- Use table of contents navigation, in-book search, bookmarks, highlights, and notes.
+- Import a book, a folder of books, or drop EPUB files onto the library.
+- Open `.epub` files directly from Windows Explorer after installing Novera.
+- Keep a local copy of imported books so the library is not tied to the original file location.
 
-## Supported EPUB behavior
+## Screenshots
 
-Novera accepts valid EPUB 2 and EPUB 3 ZIP packages with standard `META-INF/container.xml` and an OPF package document, including nested OPF paths, Unicode filenames, optional or incomplete metadata, and cover resources when epub.js can resolve them.
+Novera deliberately does not use mockups or stock screenshots. Release screenshots will be captured from the packaged Windows application and added here with the first public release assets.
 
-DRM-protected books and EPUBs containing encrypted resources are detected and rejected with an explanation. Novera does not bypass DRM. A malformed ZIP, missing container, missing OPF, unreadable file, or unsupported package is reported per file without aborting the rest of a folder import.
+## Install on Windows
 
-The regression corpus in `Master_EPUB_Library_All/` contains 243 EPUB files when complete. The corpus inventory and failure ledger are kept in `corpus-inventory.txt` and `corpus-failures.txt`.
+Download the latest `Novera-<version>-Setup.exe` from the repository’s [Releases](../../releases) page, then run the installer. The installer adds Start Menu and desktop shortcuts and associates `.epub` files with Novera.
 
-## Setup and start
+Windows may show a reputation warning for an unsigned new release. Verify that the installer came from the project’s official Releases page before continuing.
 
-Requirements:
+## EPUB compatibility
 
-- Windows 10 or later
-- Node.js 22 or a compatible current LTS release
-- npm
+Novera accepts standard EPUB 2 and EPUB 3 ZIP packages with `META-INF/container.xml` and an OPF package document. It supports nested package paths, Unicode filenames, incomplete metadata, and cover resources when they can be resolved by epub.js.
 
-Install dependencies and start the desktop app:
+DRM-protected books and EPUBs with encrypted resources are detected and rejected with an explanation. Novera does not bypass DRM. Malformed archives, missing container files, missing OPFs, and unreadable books are reported per file without stopping a folder import.
+
+## Privacy
+
+Your books and reading data stay on your computer. Novera does not require an account and does not upload book content, annotations, or library metadata.
+
+Imported books are stored in Novera’s local application storage and in its local IndexedDB database. The interface currently loads its optional web fonts from Google Fonts when an internet connection is available; no book content is sent with those requests.
+
+## Support Novera
+
+Novera is free software. If it makes your reading time better, you can support ongoing development with a coffee:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/vasanthgajavelly)
+
+## Develop locally
+
+Requirements: Windows 10 or later, [Node.js](https://nodejs.org/) 20 or newer, and npm.
 
 ```powershell
-npm install
+git clone https://github.com/vasanthgajavelly5-sys/Novera.git
+cd Novera
+npm ci
 npm start
 ```
 
-You can also launch with `Launch-Novera.bat` or `Launch-Folio.bat`.
-
-## Packaging
-
-Create an unpacked Windows Electron package:
+Useful commands:
 
 ```powershell
-npm run pack
+npm run validate:corpus  # Validates a locally available EPUB test corpus
+npm run pack             # Builds an unpacked Windows application
+npm run dist:win         # Creates the NSIS Windows installer
 ```
 
-Create the NSIS installer:
-
-```powershell
-npm run dist:win
-```
-
-The installer registers `.epub` files with Novera. Opening an EPUB from Explorer starts or focuses the existing Novera window and imports the file before opening it.
-
-## Import workflow
-
-Select the plus button in the library toolbar. **File** opens a single-selection EPUB picker. **Folder** opens a native folder picker and recursively scans every `.epub` file below it. Import progress is shown while books are processed. Invalid, encrypted, DRM-protected, unreadable, and duplicate files do not prevent valid files from importing.
-
-The empty-library browse action uses the same chooser. Drag and drop remains available for one or more EPUB files; browser fallback uses a single-file input for the chooser's File path.
-
-## Data and privacy
-
-Book binaries and metadata are stored locally in the browser IndexedDB database used by the app. Desktop imports also keep a copy under Electron's per-user application storage so the library remains independent of the original file. No book content is uploaded. The legacy IndexedDB name `FolioReaderDB` and the `folioDesktop` bridge are retained so existing data and preferences remain available.
+`Master_EPUB_Library_All/` is an optional local regression corpus and is intentionally ignored by Git. Do not add books, private libraries, or generated corpus reports to commits.
 
 ## Troubleshooting
 
-- If a book is rejected, read the per-file toast for the archive, container, OPF, DRM, or encryption reason.
-- If a file association does not open Novera, run the installer again and choose the installation directory, then open the EPUB from Explorer.
-- If a packaged app cannot find its assets, rebuild with `npm run pack` or reinstall the NSIS package rather than opening `index.html` directly.
-- To reset only the application library, use the browser's application storage tools carefully. Do not remove the user-data directory when preserving existing books and preferences matters.
+- **A book will not import:** Check the displayed error. Novera rejects invalid archives, missing EPUB package files, encrypted EPUB resources, and DRM-protected books.
+- **An EPUB does not open from Explorer:** Re-run the installer, then try opening the file again. The installer registers the `.epub` association.
+- **The app will not start from source:** Run `npm ci` again, confirm a supported Node.js version with `node --version`, and retry `npm start`.
+- **A packaged build cannot locate its files:** Build with `npm run pack` or reinstall the NSIS installer; do not open `index.html` directly.
+- **I need to reset my library:** Novera stores data locally. Back up your application data before clearing it, because doing so removes books, annotations, and preferences.
 
-## Validation notes
+## Contributing
 
-The project is validated with JavaScript diagnostics, `npm run pack`, and a repeatable corpus pass that enumerates all `.epub` files, checks ZIP/container/OPF integrity, records failures by filename, and reports totals. Full reader rendering remains dependent on epub.js and the individual book's package quality; source-file limitations are recorded rather than silently skipped.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and follow the [Code of Conduct](CODE_OF_CONDUCT.md). Keep changes focused, preserve existing user data, and never commit private books, credentials, signing files, or generated user storage.
 
 ## License
 
-Copyright © 2026 Vellune contributors.
+Copyright © 2026 Novera contributors.
 
-Vellune is free and open-source software licensed under the
-**GNU General Public License v3.0**. The SPDX identifier is `GPL-3.0-only`.
-See [COPYRIGHT.md](COPYRIGHT.md) for the project notice and the official
-[GNU GPL v3.0 text](https://www.gnu.org/licenses/gpl-3.0.html) for the license terms.
-
-## Support & Donations
-
-If you find Novera useful and want to support its ongoing development, new features, and polish, consider buying a coffee:
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-orange?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/vasanthgajavelly)
-
-Direct link: [https://buymeacoffee.com/vasanthgajavelly](https://buymeacoffee.com/vasanthgajavelly)
-
-Every contribution helps keep Novera fast, independent, and free. Thank you!
-
+Novera is licensed under the [GNU General Public License v3.0 only](LICENSE). See [COPYRIGHT.md](COPYRIGHT.md) for the project notice.

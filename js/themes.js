@@ -1,5 +1,5 @@
 /**
- * Folio — Separate application and reader theme management.
+ * Novera — Separate application and reader theme management.
  */
 
 const ThemeManager = (() => {
@@ -78,10 +78,10 @@ const ThemeManager = (() => {
   }
 
   async function init() {
-    const legacyTheme = await FolioDB.getPref('theme', 'dark');
-    const savedAppTheme = await FolioDB.getPref('appTheme', APP_THEMES.includes(legacyTheme) ? legacyTheme : 'dark');
-    customColors = normalizeCustomColors(await FolioDB.getPref('customReaderTheme', DEFAULT_CUSTOM_COLORS));
-    const savedReaderTheme = await FolioDB.getPref('readerTheme', LEGACY_READER_THEMES[legacyTheme] || 'night');
+    const legacyTheme = await NoveraDB.getPref('theme', 'dark');
+    const savedAppTheme = await NoveraDB.getPref('appTheme', APP_THEMES.includes(legacyTheme) ? legacyTheme : 'dark');
+    customColors = normalizeCustomColors(await NoveraDB.getPref('customReaderTheme', DEFAULT_CUSTOM_COLORS));
+    const savedReaderTheme = await NoveraDB.getPref('readerTheme', LEGACY_READER_THEMES[legacyTheme] || 'night');
     const migratedReaderTheme = LEGACY_READER_THEMES[savedReaderTheme] || (READER_THEMES.includes(savedReaderTheme) ? savedReaderTheme : 'night');
     setAppTheme(savedAppTheme, false);
     setReaderTheme(migratedReaderTheme, savedReaderTheme !== migratedReaderTheme);
@@ -97,7 +97,7 @@ const ThemeManager = (() => {
     document.body.setAttribute('data-theme', themeName);
 
     if (persist) {
-      FolioDB.setPref('appTheme', themeName);
+      NoveraDB.setPref('appTheme', themeName);
     }
 
     document.querySelectorAll('[data-app-theme]').forEach(control => {
@@ -112,7 +112,7 @@ const ThemeManager = (() => {
       themeSwitch.setAttribute('aria-checked', isDark ? 'true' : 'false');
       themeSwitch.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
     }
-    window.dispatchEvent(new CustomEvent('folio:appthemechange', { detail: { theme: themeName } }));
+    window.dispatchEvent(new CustomEvent('novera:appthemechange', { detail: { theme: themeName } }));
   }
 
   function setReaderTheme(themeName, persist = true) {
@@ -139,14 +139,14 @@ const ThemeManager = (() => {
       preset.setAttribute('aria-pressed', preset.dataset.theme === themeName ? 'true' : 'false');
     });
     updateCustomUI();
-    if (persist) FolioDB.setPref('readerTheme', themeName);
+    if (persist) NoveraDB.setPref('readerTheme', themeName);
 
     // Apply directly into EPUB iframe page content
     if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
       EpubLoader.applyTheme(themeName);
     }
 
-    window.dispatchEvent(new CustomEvent('folio:readerThemeChange', { detail: { theme: themeName, colors } }));
+    window.dispatchEvent(new CustomEvent('novera:readerThemeChange', { detail: { theme: themeName, colors } }));
   }
 
   function getThemeColors(theme) {
@@ -172,14 +172,14 @@ const ThemeManager = (() => {
   function setCustomColor(key, value) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_CUSTOM_COLORS, key)) return;
     customColors = normalizeCustomColors({ ...customColors, [key]: value });
-    FolioDB.setPref('customReaderTheme', customColors);
+    NoveraDB.setPref('customReaderTheme', customColors);
     updateCustomUI();
     if (currentReaderTheme === 'custom') setReaderTheme('custom');
   }
 
   function resetCustomTheme() {
     customColors = { ...DEFAULT_CUSTOM_COLORS };
-    FolioDB.setPref('customReaderTheme', customColors);
+    NoveraDB.setPref('customReaderTheme', customColors);
     updateCustomUI();
     setReaderTheme('custom');
   }
