@@ -1,6 +1,6 @@
 {
-  "name": "vellune-reader",
-  "productName": "Vellune",
+  "name": "novera",
+  "productName": "Novera",
   "version": "1.0.0",
   "description": "A beautiful home for your books",
   "main": "main.js",
@@ -19,16 +19,16 @@
     "desktop",
     "windows"
   ],
-  "author": "Vellune",
+  "author": "Novera",
   "license": "ISC",
   "devDependencies": {
     "electron": "^44.3.0",
     "electron-builder": "^26.15.3"
   },
   "build": {
-    "appId": "com.vellune.reader",
-    "productName": "Vellune",
-    "copyright": "Copyright 2026 Vellune",
+    "appId": "com.novera.reader",
+    "productName": "Novera",
+    "copyright": "Copyright 2026 Novera",
     "directories": {
       "output": "dist"
     },
@@ -72,8 +72,8 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Vellune",
-      "uninstallDisplayName": "Vellune EPUB Reader",
+      "shortcutName": "Novera",
+      "uninstallDisplayName": "Novera EPUB Reader",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": "assets/icon.ico",

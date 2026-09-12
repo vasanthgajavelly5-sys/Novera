@@ -101,7 +101,7 @@ function createWindow() {
     backgroundColor: '#0C0C12',
     icon: iconPath,
     show: false,
-    title: 'Vellune — A beautiful home for your books',
+    title: 'Novera — A beautiful home for your books',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -168,7 +168,7 @@ ipcMain.handle('dialog:open-files', async () => {
 
   const result = await dialog.showOpenDialog(mainWindow, {
     title: 'Select one EPUB book',
-    buttonLabel: 'Import to Vellune',
+    buttonLabel: 'Import to Novera',
     filters: [
       { name: 'EPUB eBooks (*.epub)', extensions: ['epub'] },
       { name: 'All Files (*.*)', extensions: ['*'] }

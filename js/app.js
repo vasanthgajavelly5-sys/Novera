@@ -22,7 +22,7 @@ const App = (() => {
     bindSearchOverlay();
     bindFullscreenState();
 
-    console.log('Vellune EPUB Reader successfully initialized');
+    console.log('Novera EPUB Reader successfully initialized');
   }
 
   // View Switching

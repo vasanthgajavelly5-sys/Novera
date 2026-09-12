@@ -700,7 +700,7 @@ const Library = (() => {
     <dc:language>en</dc:language>
     <dc:identifier id="BookId">urn:uuid:folio-sample-alice-1865</dc:identifier>
     <dc:description>The classic 1865 English tale of Alice tumbling down a rabbit hole into a fantastical, whimsical world of curious creatures.</dc:description>
-    <dc:publisher>Vellune Classics</dc:publisher>
+    <dc:publisher>Novera Classics</dc:publisher>
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
@@ -881,7 +881,7 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
     // Edition
     ctx.fillStyle = 'rgba(221, 214, 254, 0.6)';
     ctx.font = '12px Inter, sans-serif';
-    ctx.fillText("VELLUNE CLASSIC EDITION", 200, 520);
+    ctx.fillText("NOVERA CLASSIC EDITION", 200, 520);
 
     return canvas.toDataURL('image/jpeg', 0.9);
   }
