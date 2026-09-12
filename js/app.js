@@ -69,7 +69,10 @@ const App = (() => {
       readerView.classList.add('active');
     }
 
-    await EpubLoader.openBook(book);
+    const success = await EpubLoader.openBook(book);
+    if (!success) {
+      openLibrary();
+    }
   }
 
   function bindNavigationEvents() {
@@ -335,6 +338,17 @@ const App = (() => {
       input.addEventListener('input', Utils.debounce((e) => {
         EpubLoader.searchBook(e.target.value);
       }, 300));
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            EpubLoader.prevSearchResult();
+          } else {
+            EpubLoader.nextSearchResult();
+          }
+        }
+      });
     }
 
     if (prevBtn) prevBtn.addEventListener('click', () => EpubLoader.prevSearchResult());
@@ -390,12 +404,12 @@ const App = (() => {
 
       // Reader shortcuts
       if (activeView === 'reader') {
-        if (e.key === 'ArrowRight' || e.key === ' ' || e.key.toLowerCase() === 'j') {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key.toLowerCase() === 'j') {
           if (!e.shiftKey) {
             e.preventDefault();
             EpubLoader.next();
           }
-        } else if (e.key === 'ArrowLeft' || (e.key === ' ' && e.shiftKey) || e.key.toLowerCase() === 'k') {
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey) || e.key.toLowerCase() === 'k') {
           e.preventDefault();
           EpubLoader.prev();
         } else if (e.key.toLowerCase() === 't') {

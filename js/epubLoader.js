@@ -31,7 +31,21 @@ const EpubLoader = (() => {
     currentBookData = bookRecord;
     showLoading(true, 'Opening book...');
 
-    // Clear previous rendition if any
+    // Clean up previous book & rendition to prevent memory leaks
+    try {
+      if (rendition) {
+        rendition.destroy();
+        rendition = null;
+      }
+      if (currentBook) {
+        currentBook.destroy();
+        currentBook = null;
+      }
+    } catch (cleanErr) {
+      console.warn('Previous book cleanup warning:', cleanErr);
+    }
+
+    // Clear previous rendition DOM container
     const container = document.getElementById('epub-container');
     if (container) container.innerHTML = '';
 
@@ -417,11 +431,19 @@ const EpubLoader = (() => {
     }
   }
 
+  function scheduleLiveStyleRefresh() {
+    applyStylesToAllContents();
+    requestAnimationFrame(() => {
+      applyStylesToAllContents();
+      setTimeout(applyStylesToAllContents, 80);
+    });
+  }
+
   function applyTheme(themeName) {
     if (!rendition) return;
 
     // Force style injection directly to live iframe DOM
-    applyStylesToAllContents();
+    scheduleLiveStyleRefresh();
   }
 
   function applySettings(settings) {
@@ -437,7 +459,7 @@ const EpubLoader = (() => {
     }
 
     // Force style injection directly to live iframe DOM
-    applyStylesToAllContents();
+    scheduleLiveStyleRefresh();
   }
 
   function reRender() {
@@ -642,12 +664,16 @@ const EpubLoader = (() => {
 
     try {
       // Search through each spine section
-      const spine = currentBook.spine.spineItems;
+      const spine = currentBook.spine?.spineItems || [];
       const promises = spine.map(item => {
         return item.load(currentBook.load.bind(currentBook)).then(doc => {
           const results = item.find(query.trim());
           item.unload();
-          return results;
+          return results || [];
+        }).catch(err => {
+          console.warn('Spine item search skipped:', err);
+          try { item.unload(); } catch (_) {}
+          return [];
         });
       });
 

@@ -73,3 +73,14 @@ Book binaries and metadata are stored locally in the browser IndexedDB database 
 ## Validation notes
 
 The project is validated with JavaScript diagnostics, `npm run pack`, and a repeatable corpus pass that enumerates all `.epub` files, checks ZIP/container/OPF integrity, records failures by filename, and reports totals. Full reader rendering remains dependent on epub.js and the individual book's package quality; source-file limitations are recorded rather than silently skipped.
+
+## Support & Donations
+
+If you find Novera useful and want to support its ongoing development, new features, and polish, consider buying a coffee:
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-orange?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/vasanthgajavelly)
+
+Direct link: [https://buymeacoffee.com/vasanthgajavelly](https://buymeacoffee.com/vasanthgajavelly)
+
+Every contribution helps keep Novera fast, independent, and free. Thank you!
+

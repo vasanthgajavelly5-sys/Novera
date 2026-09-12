@@ -328,8 +328,9 @@ ipcMain.handle('fs:read-epub', (_event, filePath) => {
 
 ipcMain.handle('window:toggle-fullscreen', () => {
   if (!mainWindow) return false;
-  mainWindow.setFullScreen(!mainWindow.isFullScreen());
-  return !mainWindow.isFullScreen();
+  const next = !mainWindow.isFullScreen();
+  mainWindow.setFullScreen(next);
+  return next;
 });
 
 ipcMain.handle('window:is-fullscreen', () => Boolean(mainWindow?.isFullScreen()));

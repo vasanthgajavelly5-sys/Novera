@@ -256,6 +256,13 @@ const Library = (() => {
     importFileBtn?.addEventListener('click', handleFileChoice);
     importFolderBtn?.addEventListener('click', handleFolderChoice);
 
+    const sampleBookBtn = document.getElementById('sample-book-btn');
+    if (sampleBookBtn) {
+      sampleBookBtn.addEventListener('click', () => {
+        generateSampleBook();
+      });
+    }
+
     // File input change (browser/fallback)
     if (fileInput) {
       fileInput.addEventListener('change', async (e) => {
@@ -482,17 +489,42 @@ const Library = (() => {
 
   function urlToDataUrl(url) {
     return new Promise((resolve) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          resolve(null);
+        }
+      }, 4000);
+
       const img = new Image();
       img.crossOrigin = 'Anonymous';
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        try {
+          if (!img.naturalWidth || !img.naturalHeight) {
+            return resolve(null);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        } catch (e) {
+          console.warn('Canvas toDataURL failed:', e);
+          resolve(null);
+        }
       };
-      img.onerror = () => resolve(null);
+      img.onerror = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(null);
+      };
       img.src = url;
     });
   }
@@ -890,6 +922,7 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
     init,
     loadAndRenderBooks,
     openBookDetails,
-    deleteBook
+    deleteBook,
+    generateSampleBook
   };
 })();

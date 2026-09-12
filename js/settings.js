@@ -78,7 +78,7 @@ const ReaderSettings = (() => {
     FolioDB.setPref('readerSettings', currentSettings);
     updateUI();
 
-    if (shouldApply && window.EpubLoader && EpubLoader.isLoaded()) {
+    if (shouldApply && window.EpubLoader) {
       EpubLoader.applySettings(currentSettings);
     }
   }
