@@ -1,0 +1,224 @@
+/**
+ * Folio — Separate application and reader theme management.
+ */
+
+const ThemeManager = (() => {
+  const APP_THEMES = ['dark', 'light'];
+  const READER_THEMES = ['neutral', 'sepia', 'night', 'paper', 'contrast1', 'contrast2', 'contrast3', 'contrast4', 'custom'];
+  const LEGACY_READER_THEMES = { dark: 'night', light: 'neutral', oled: 'night', sepia: 'sepia' };
+  let currentAppTheme = 'dark';
+  let currentReaderTheme = 'night';
+  let customColors = null;
+
+  const THEME_COLORS = {
+    neutral: {
+      bg: '#FDFCF8',
+      surface: '#FFFFFF',
+      text: '#1A1410',
+      muted: '#6B6055',
+      link: '#245A8D',
+      selection: 'rgba(36,90,141,0.25)',
+      selectionText: '#000000'
+    },
+    sepia: {
+      bg: '#F4ECDA',
+      surface: '#FAF3E4',
+      text: '#342921',
+      muted: '#7A6B5D',
+      link: '#8C5F20',
+      selection: 'rgba(217,119,6,0.3)',
+      selectionText: '#000000'
+    },
+    night: {
+      bg: '#1B1D21', surface: '#24272C', text: '#E7E3D8', muted: '#A7A49B',
+      link: '#8FC7E8', selection: 'rgba(143,199,232,0.35)', selectionText: '#FFFFFF'
+    },
+    paper: {
+      bg: '#E9E0CF', surface: '#F7F0E2', text: '#2D271F', muted: '#756A5B',
+      link: '#6B4F2A', selection: 'rgba(107,79,42,0.25)', selectionText: '#FFFFFF'
+    },
+    contrast1: {
+      bg: '#000000', surface: '#111111', text: '#FFFFFF', muted: '#D0D0D0',
+      link: '#FFFFFF', selection: 'rgba(255,255,255,0.38)', selectionText: '#000000'
+    },
+    contrast2: {
+      bg: '#000000', surface: '#151515', text: '#FFFFFF', muted: '#E2E2E2',
+      link: '#FFE600', selection: 'rgba(255,230,0,0.45)', selectionText: '#000000'
+    },
+    contrast3: {
+      bg: '#071426', surface: '#102542', text: '#FFFFFF', muted: '#C6D5E8',
+      link: '#7DD3FC', selection: 'rgba(125,211,252,0.42)', selectionText: '#00111F'
+    },
+    contrast4: {
+      bg: '#E4F1E5', surface: '#F3FAF3', text: '#102B19', muted: '#4D6B55',
+      link: '#176B3A', selection: 'rgba(23,107,58,0.28)', selectionText: '#FFFFFF'
+    }
+  };
+
+  const DEFAULT_CUSTOM_COLORS = { bg: '#FDFCF8', text: '#1A1410', muted: '#6B6055', link: '#245A8D', selection: '#8DB7D9' };
+
+  function normalizeHex(value, fallback) {
+    return /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : fallback;
+  }
+
+  function normalizeCustomColors(colors) {
+    const source = colors || {};
+    return {
+      bg: normalizeHex(source.bg, DEFAULT_CUSTOM_COLORS.bg),
+      text: normalizeHex(source.text, DEFAULT_CUSTOM_COLORS.text),
+      muted: normalizeHex(source.muted, DEFAULT_CUSTOM_COLORS.muted),
+      link: normalizeHex(source.link, DEFAULT_CUSTOM_COLORS.link),
+      selection: normalizeHex(source.selection, DEFAULT_CUSTOM_COLORS.selection)
+    };
+  }
+
+  function selectionColor(hex) {
+    const value = hex.replace('#', '');
+    return `rgba(${parseInt(value.slice(0, 2), 16)},${parseInt(value.slice(2, 4), 16)},${parseInt(value.slice(4, 6), 16)},0.38)`;
+  }
+
+  async function init() {
+    const legacyTheme = await FolioDB.getPref('theme', 'dark');
+    const savedAppTheme = await FolioDB.getPref('appTheme', APP_THEMES.includes(legacyTheme) ? legacyTheme : 'dark');
+    customColors = normalizeCustomColors(await FolioDB.getPref('customReaderTheme', DEFAULT_CUSTOM_COLORS));
+    const savedReaderTheme = await FolioDB.getPref('readerTheme', LEGACY_READER_THEMES[legacyTheme] || 'night');
+    const migratedReaderTheme = LEGACY_READER_THEMES[savedReaderTheme] || (READER_THEMES.includes(savedReaderTheme) ? savedReaderTheme : 'night');
+    setAppTheme(savedAppTheme, false);
+    setReaderTheme(migratedReaderTheme, savedReaderTheme !== migratedReaderTheme);
+    updateCustomUI();
+    bindUIEvents();
+  }
+
+  function setAppTheme(themeName, persist = true) {
+    if (!APP_THEMES.includes(themeName)) themeName = 'dark';
+    currentAppTheme = themeName;
+
+    document.documentElement.setAttribute('data-theme', themeName);
+    document.body.setAttribute('data-theme', themeName);
+
+    if (persist) {
+      FolioDB.setPref('appTheme', themeName);
+    }
+
+    document.querySelectorAll('[data-app-theme]').forEach(control => {
+      const isActive = control.dataset.appTheme === themeName;
+      control.classList.toggle('active', isActive);
+      control.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+    const themeSwitch = document.getElementById('app-theme-switch');
+    if (themeSwitch) {
+      const isDark = themeName === 'dark';
+      themeSwitch.dataset.state = themeName;
+      themeSwitch.setAttribute('aria-checked', isDark ? 'true' : 'false');
+      themeSwitch.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+    window.dispatchEvent(new CustomEvent('folio:appthemechange', { detail: { theme: themeName } }));
+  }
+
+  function setReaderTheme(themeName, persist = true) {
+    if (!READER_THEMES.includes(themeName)) themeName = 'night';
+    currentReaderTheme = themeName;
+    const colors = getThemeColors(themeName);
+
+    const readerView = document.getElementById('reader-view');
+    const contentWrap = document.getElementById('reader-content-wrap');
+    const epubContainer = document.getElementById('epub-container');
+    if (readerView) readerView.style.backgroundColor = colors.bg;
+    if (contentWrap) contentWrap.style.backgroundColor = colors.bg;
+    if (epubContainer) epubContainer.style.backgroundColor = colors.bg;
+
+    document.querySelectorAll('.theme-preset').forEach(preset => {
+      preset.classList.toggle('active', preset.dataset.theme === themeName);
+      preset.setAttribute('aria-pressed', preset.dataset.theme === themeName ? 'true' : 'false');
+    });
+    updateCustomUI();
+    if (persist) FolioDB.setPref('readerTheme', themeName);
+
+    // Apply directly into EPUB iframe page content
+    if (window.EpubLoader && EpubLoader.isLoaded()) {
+      EpubLoader.applyTheme(themeName);
+    }
+
+    window.dispatchEvent(new CustomEvent('folio:readerThemeChange', { detail: { theme: themeName, colors } }));
+  }
+
+  function getThemeColors(theme) {
+    if (theme === 'custom') {
+      return { ...customColors, surface: customColors.bg, selection: selectionColor(customColors.selection), selectionText: '#000000' };
+    }
+    return THEME_COLORS[theme] || THEME_COLORS.night;
+  }
+
+  function updateCustomUI() {
+    document.querySelectorAll('[data-custom-color]').forEach(input => {
+      input.value = customColors[input.dataset.customColor];
+    });
+    const preview = document.getElementById('custom-theme-preview');
+    const swatch = document.querySelector('.theme-swatch-custom');
+    if (preview) {
+      preview.style.backgroundColor = customColors.bg;
+      preview.style.color = customColors.text;
+    }
+    if (swatch) swatch.style.background = `linear-gradient(135deg, ${customColors.bg} 50%, ${customColors.link} 50%)`;
+  }
+
+  function setCustomColor(key, value) {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_CUSTOM_COLORS, key)) return;
+    customColors = normalizeCustomColors({ ...customColors, [key]: value });
+    FolioDB.setPref('customReaderTheme', customColors);
+    updateCustomUI();
+    if (currentReaderTheme === 'custom') setReaderTheme('custom');
+  }
+
+  function resetCustomTheme() {
+    customColors = { ...DEFAULT_CUSTOM_COLORS };
+    FolioDB.setPref('customReaderTheme', customColors);
+    updateCustomUI();
+    setReaderTheme('custom');
+  }
+
+  function bindUIEvents() {
+    document.addEventListener('click', (e) => {
+      const themeSwitch = e.target.closest('#app-theme-switch');
+      if (themeSwitch) {
+        setAppTheme(currentAppTheme === 'dark' ? 'light' : 'dark');
+        return;
+      }
+      const preset = e.target.closest('.theme-preset');
+      if (preset && preset.dataset.theme) {
+        setReaderTheme(preset.dataset.theme);
+        return;
+      }
+      const resetCustom = e.target.closest('#reset-custom-theme-btn');
+      if (resetCustom) {
+        resetCustomTheme();
+        return;
+      }
+      const appPreset = e.target.closest('[data-app-theme]');
+      if (appPreset && appPreset.dataset.appTheme) setAppTheme(appPreset.dataset.appTheme);
+    });
+    document.addEventListener('input', (e) => {
+      const input = e.target.closest('[data-custom-color]');
+      if (input) setCustomColor(input.dataset.customColor, input.value);
+    });
+  }
+
+  function getAppTheme() {
+    return currentAppTheme;
+  }
+
+  function getReaderTheme() {
+    return currentReaderTheme;
+  }
+
+  return {
+    init,
+    setAppTheme,
+    setReaderTheme,
+    getAppTheme,
+    getReaderTheme,
+    getThemeColors,
+    APP_THEMES,
+    READER_THEMES
+  };
+})();

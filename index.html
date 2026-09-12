@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vellune — A beautiful home for your books.">
+  <title>Vellune — A beautiful home for your books</title>
+
+  <!-- Google Fonts: Editorial Serif, Refined Display, Modern Sans, Clean Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/library.css">
+  <link rel="stylesheet" href="css/reader.css">
+  <link rel="stylesheet" href="css/panels.css">
+
+  <!-- EPUB.js & JSZip Dependencies (bundled for offline packaged use) -->
+  <script src="node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="node_modules/epubjs/dist/epub.min.js"></script>
+</head>
+<body data-theme="dark">
+
+  <!-- Ambient dynamic glow background -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- =========================================================
+       VIEW 1: LIBRARY / HOME VIEW
+       ========================================================= -->
+  <div id="library-view" class="view active">
+
+    <!-- Top Navigation Bar -->
+    <nav id="lib-nav" class="glass-nav" aria-label="Main navigation">
+      <div class="lib-nav-left">
+        <div class="logo" role="banner">
+          <div class="logo-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="3" width="16" height="22" rx="3" fill="url(#brand-g1)"/>
+              <rect x="7" y="5" width="16" height="22" rx="3" fill="url(#brand-g2)" opacity="0.6"/>
+              <line x1="6" y1="10" x2="14" y2="10" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="6" y1="14" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="6" y1="18" x2="11" y2="18" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="brand-g1" x1="2" y1="3" x2="18" y2="25" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#C4B5FD"/>
+                  <stop offset="100%" stop-color="#7C3AED"/>
+                </linearGradient>
+                <linearGradient id="brand-g2" x1="7" y1="5" x2="23" y2="27" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#A78BFA"/>
+                  <stop offset="100%" stop-color="#4C1D95"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="logo-wordmark">Vellune</span>
+          <span class="logo-tagline">A beautiful home for your books</span>
+        </div>
+      </div>
+
+      <div class="lib-nav-center">
+        <div class="glass-input search-box" role="search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="lib-search-input" placeholder="Search title or author..." autocomplete="off" aria-label="Search library">
+          <kbd id="search-kbd-hint">Ctrl+K</kbd>
+        </div>
+      </div>
+
+      <div class="lib-nav-right">
+        <!-- Grid/List View Toggle -->
+        <button class="btn btn-glass icon-btn" id="view-toggle-btn" title="Toggle Grid / List View" aria-label="Toggle grid or list view">
+          <svg id="view-grid-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+
+        <button class="btn btn-glass icon-btn" id="library-settings-btn" title="Settings" aria-label="Open settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <button class="app-theme-switch" id="app-theme-switch" type="button" role="switch" aria-checked="true" aria-label="Switch to light mode" title="Switch light and dark mode">
+          <span class="app-theme-track" aria-hidden="true">
+            <span class="app-theme-thumb"></span>
+            <span class="app-theme-icon app-theme-icon-sun">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+            </span>
+            <span class="app-theme-icon app-theme-icon-moon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.5 15.6A8.5 8.5 0 0 1 8.4 3.5 8.5 8.5 0 1 0 20.5 15.6Z"/><path d="m17.5 4 .5 1.5L19.5 6 18 6.5 17.5 8 17 6.5 15.5 6 17 5.5 17.5 4Z"/></svg>
+            </span>
+          </span>
+        </button>
+
+        <!-- Add Book CTA -->
+        <button class="btn btn-accent icon-btn" id="add-book-btn" title="Add a book or folder" aria-label="Add a book or folder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Library Content Scroll Area -->
+    <main id="lib-content" class="lib-content">
+
+      <!-- Continue Reading Strip -->
+      <section id="continue-section" aria-label="Continue reading">
+        <div class="continue-label">Continue Reading</div>
+        <div id="continue-card" class="continue-card" tabindex="0" role="button" aria-label="Continue reading current book">
+          <!-- Dynamically filled by library.js -->
+        </div>
+      </section>
+
+      <!-- Library Section Header -->
+      <div id="lib-header">
+        <div class="lib-title-group">
+          <h1 class="lib-title">My Library</h1>
+          <span class="lib-count" id="book-count">0 books</span>
+        </div>
+        <div class="lib-controls">
+          <select id="sort-select" class="glass-select" aria-label="Sort books by">
+            <option value="recent">Recently Read</option>
+            <option value="added">Recently Added</option>
+            <option value="title">Title (A–Z)</option>
+            <option value="author">Author (A–Z)</option>
+            <option value="progress">Reading Progress</option>
+          </select>
+          <button class="btn btn-glass icon-btn" id="add-more-btn" title="Add more EPUB files">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Drop Zone (When Library is Empty or dragged over) -->
+      <div id="drop-zone" role="region" aria-label="EPUB drop zone">
+        <div class="drop-inner" id="drop-zone-inner">
+          <div class="drop-icon-anim" aria-hidden="true">
+            <div class="drop-ring"></div>
+            <div class="drop-ring"></div>
+            <div class="drop-ring"></div>
+            <svg class="drop-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="12" y1="6" x2="12" y2="14"/><polyline points="9 11 12 14 15 11"/></svg>
+          </div>
+          <h2 class="drop-title">Your Library is Empty</h2>
+          <p class="drop-subtitle">Drag and drop your <strong>.epub</strong> books here, or click below</p>
+          <button class="btn btn-glow" id="browse-btn" aria-label="Browse EPUB files">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>Browse EPUB Files</span>
+          </button>
+          <p class="drop-hint">Select EPUB files from your PC · Stored locally and privately</p>
+        </div>
+      </div>
+
+      <!-- Books Grid / List -->
+      <div id="books-grid" role="list" aria-label="Book collection"></div>
+
+      <!-- Empty Filter State -->
+      <div id="empty-state" class="empty-state hidden" aria-live="polite">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <h3>No Books Found</h3>
+        <p>No books match your search query. Try searching by title or author name.</p>
+        <button class="btn btn-glass btn-sm" id="clear-search-btn">Clear Filter</button>
+      </div>
+
+    </main>
+
+    <!-- Hidden file input for file picker -->
+    <input type="file" id="file-input" accept=".epub,application/epub+zip" hidden aria-hidden="true">
+  </div>
+
+  <!-- =========================================================
+       VIEW 2: READER VIEW
+       ========================================================= -->
+  <div id="reader-view" class="view hidden">
+
+    <!-- Reader Floating / Top Toolbar -->
+    <header id="reader-toolbar" class="glass-nav" aria-label="Reader tools">
+      <div class="toolbar-left">
+        <button class="btn btn-glass icon-btn" id="back-to-library-btn" title="Back to Library (Esc)" aria-label="Back to library">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="toolbar-title-block">
+          <div class="toolbar-book-title" id="reader-title">Loading Book...</div>
+          <div class="toolbar-book-author" id="reader-author"></div>
+        </div>
+      </div>
+
+      <div class="toolbar-center">
+        <div class="toolbar-progress-info" aria-live="polite">
+          <span id="progress-chapter">Chapter</span>
+          <span class="toolbar-sep" aria-hidden="true">·</span>
+          <span id="page-info">0%</span>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- In-Book Search Button -->
+        <button class="btn btn-glass icon-btn" id="search-toggle-btn" title="Search inside book (/)" aria-label="Search book">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+
+        <!-- Table of Contents -->
+        <button class="btn btn-glass icon-btn" id="toc-toggle-btn" title="Table of Contents (T)" aria-label="Open Table of Contents">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+
+        <!-- Bookmark Current Page -->
+        <button class="btn btn-glass icon-btn" id="bookmark-btn" title="Bookmark Page (B)" aria-label="Bookmark this page">
+          <svg id="bookmark-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
+
+        <!-- Annotations & Highlights Drawer -->
+        <button class="btn btn-glass icon-btn" id="annotations-toggle-btn" title="Highlights & Notes (N)" aria-label="Open highlights and notes">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+
+        <!-- Settings Drawer -->
+        <button class="btn btn-glass icon-btn" id="settings-btn" title="Reading Settings (S)" aria-label="Open reading settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <!-- Fullscreen / Focus Mode -->
+        <button class="btn btn-glass icon-btn" id="fullscreen-btn" title="Toggle Fullscreen (F)" aria-label="Toggle fullscreen">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
+
+      </div>
+    </header>
+
+    <!-- Reading Progress Stripe -->
+    <div id="reading-stripe" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Reading progress">
+      <div id="reading-stripe-fill"></div>
+    </div>
+
+    <!-- Main Reader Viewport -->
+    <div id="reader-main">
+      <!-- Previous Page Arrow -->
+      <button class="nav-arrow" id="prev-btn" aria-label="Previous page (Left arrow)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+
+      <!-- Central EPUB Content Area -->
+      <div id="reader-content-wrap">
+        <div id="epub-container" role="main" aria-label="Book pages"></div>
+
+        <!-- Sleek Page Turning / Loading Overlay -->
+        <div id="reader-loading" class="hidden">
+          <div class="loading-book" aria-hidden="true">
+            <div class="loading-page p1"></div>
+            <div class="loading-page p2"></div>
+            <div class="loading-page p3"></div>
+          </div>
+          <p id="reader-loading-text">Rendering book layout...</p>
+        </div>
+      </div>
+
+      <!-- Next Page Arrow -->
+      <button class="nav-arrow" id="next-btn" aria-label="Next page (Right arrow)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <footer id="reader-statusbar" aria-label="Reader status">
+      <div class="statusbar-item">
+        <span id="status-chapter-name">Chapter</span>
+      </div>
+      <div class="statusbar-item">
+        <span id="status-progress-pct">0% read</span>
+      </div>
+      <div class="statusbar-item">
+        <span id="status-time-left"></span>
+      </div>
+    </footer>
+
+    <!-- Floating Text Selection Toolbar -->
+    <div id="selection-toolbar" role="toolbar" aria-label="Text selection actions">
+      <div class="sel-colors">
+        <button class="sel-color sel-color-yellow active" data-color="yellow" title="Highlight Yellow" aria-label="Highlight Yellow"></button>
+        <button class="sel-color sel-color-blue" data-color="blue" title="Highlight Blue" aria-label="Highlight Blue"></button>
+        <button class="sel-color sel-color-green" data-color="green" title="Highlight Green" aria-label="Highlight Green"></button>
+        <button class="sel-color sel-color-pink" data-color="pink" title="Highlight Pink" aria-label="Highlight Pink"></button>
+        <button class="sel-color sel-color-purple" data-color="purple" title="Highlight Purple" aria-label="Highlight Purple"></button>
+        <button class="sel-color sel-color-orange" data-color="orange" title="Highlight Orange" aria-label="Highlight Orange"></button>
+      </div>
+      <div class="sel-divider"></div>
+      <button class="sel-action" id="sel-add-note" title="Add note to highlight" aria-label="Add note">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="sel-action" id="sel-copy" title="Copy text" aria-label="Copy text">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
+
+    <!-- In-Book Search Overlay Modal -->
+    <div id="search-overlay" role="dialog" aria-modal="true" aria-label="Search within book">
+      <div id="search-bar-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Search within book..." autocomplete="off">
+        <span id="search-count">0 results</span>
+        <div id="search-nav">
+          <button class="btn btn-glass icon-btn btn-sm" id="search-prev-btn" title="Previous result">▲</button>
+          <button class="btn btn-glass icon-btn btn-sm" id="search-next-btn" title="Next result">▼</button>
+          <button class="btn btn-glass icon-btn btn-sm" id="search-close-btn" title="Close search">✕</button>
+        </div>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Keyboard Shortcut Floating Hint -->
+    <div id="shortcut-hint" aria-hidden="true">
+      <span>Press</span> <kbd class="shortcut-key">?</kbd> <span>for shortcuts</span>
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       DRAWERS / PANELS (Sliding Glass Drawers)
+       ========================================================= -->
+  <div id="panel-overlay" class="panel-overlay" aria-hidden="true"></div>
+
+  <!-- TOC Drawer (Left) -->
+  <aside id="toc-panel" class="panel panel-left" aria-label="Table of contents" aria-hidden="true">
+    <div class="panel-header">
+      <h3>Table of Contents</h3>
+      <button class="btn btn-glass icon-btn" id="close-toc-btn" aria-label="Close table of contents">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="toc-search">
+      <div class="glass-input">
+        <input type="text" id="toc-filter-input" placeholder="Filter chapters..." aria-label="Filter chapters">
+      </div>
+    </div>
+    <div class="panel-body toc-list" id="toc-list" role="navigation"></div>
+  </aside>
+
+  <!-- Settings Drawer (Right) -->
+  <aside id="settings-panel" class="panel panel-right" aria-label="Reading display settings" aria-hidden="true">
+    <div class="panel-header">
+      <h3>Display &amp; Typography</h3>
+      <button class="btn btn-glass icon-btn" id="close-settings-btn" aria-label="Close settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="panel-body settings-body">
+      <section class="settings-group" aria-labelledby="reading-text-title">
+        <div class="settings-section-heading">
+          <div class="setting-section-title" id="reading-text-title">Reading text</div>
+          <p>Choose a comfortable typeface and text size.</p>
+        </div>
+        <div class="setting-row setting-control-row">
+          <div class="setting-label">Font size<span>Adjust the size of the page text.</span></div>
+          <div class="font-stepper" aria-label="Font size">
+            <button class="stepper-btn" id="font-decrease" type="button" aria-label="Decrease font size">-</button>
+            <span class="stepper-val" id="font-size-display">18px</span>
+            <button class="stepper-btn" id="font-increase" type="button" aria-label="Increase font size">+</button>
+          </div>
+        </div>
+        <div class="font-grid" aria-label="Font family">
+          <button class="font-opt active" data-font="Lora" style="font-family:'Lora',serif">
+            Lora
+            <span class="font-opt-name">Editorial Serif</span>
+          </button>
+          <button class="font-opt" data-font="Playfair Display" style="font-family:'Playfair Display',serif">
+            Playfair
+            <span class="font-opt-name">Classic Display</span>
+          </button>
+          <button class="font-opt" data-font="Inter" style="font-family:'Inter',sans-serif">
+            Inter
+            <span class="font-opt-name">Modern Sans</span>
+          </button>
+          <button class="font-opt" data-font="Georgia" style="font-family:Georgia,serif">
+            Georgia
+            <span class="font-opt-name">Literary Serif</span>
+          </button>
+          <button class="font-opt" data-font="JetBrains Mono" style="font-family:'JetBrains Mono',monospace">
+            Mono
+            <span class="font-opt-name">Technical Code</span>
+          </button>
+          <button class="font-opt" data-font="Original" style="font-family:serif">
+            Publisher
+            <span class="font-opt-name">Original EPUB</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-group" aria-labelledby="reading-theme-title">
+        <div class="settings-section-heading">
+          <div class="setting-section-title" id="reading-theme-title">Reading theme</div>
+          <p>Presets change the page, text, and link colors.</p>
+        </div>
+        <div class="theme-preset-grid" role="group" aria-label="Reader themes">
+          <button class="theme-preset" data-theme="neutral" aria-pressed="false"><span class="theme-swatch theme-swatch-neutral"></span><span class="theme-preset-name">Neutral</span></button>
+          <button class="theme-preset" data-theme="sepia" aria-pressed="false"><span class="theme-swatch theme-swatch-sepia"></span><span class="theme-preset-name">Sepia</span></button>
+          <button class="theme-preset active" data-theme="night" aria-pressed="true"><span class="theme-swatch theme-swatch-night"></span><span class="theme-preset-name">Night</span></button>
+          <button class="theme-preset" data-theme="paper" aria-pressed="false"><span class="theme-swatch theme-swatch-paper"></span><span class="theme-preset-name">Paper</span></button>
+          <button class="theme-preset" data-theme="contrast1" aria-pressed="false"><span class="theme-swatch theme-swatch-contrast1"></span><span class="theme-preset-name">Contrast 1</span></button>
+          <button class="theme-preset" data-theme="contrast2" aria-pressed="false"><span class="theme-swatch theme-swatch-contrast2"></span><span class="theme-preset-name">Contrast 2</span></button>
+          <button class="theme-preset" data-theme="contrast3" aria-pressed="false"><span class="theme-swatch theme-swatch-contrast3"></span><span class="theme-preset-name">Contrast 3</span></button>
+          <button class="theme-preset" data-theme="contrast4" aria-pressed="false"><span class="theme-swatch theme-swatch-contrast4"></span><span class="theme-preset-name">Contrast 4</span></button>
+          <button class="theme-preset" data-theme="custom" aria-pressed="false"><span class="theme-swatch theme-swatch-custom"></span><span class="theme-preset-name">Custom</span></button>
+        </div>
+        <details class="custom-theme-details">
+          <summary>Customize colors <span>Optional</span></summary>
+          <div class="custom-theme-controls" aria-labelledby="custom-theme-title">
+          <div class="custom-theme-heading"><span id="custom-theme-title">Custom reader colors</span><span id="custom-theme-preview" class="custom-theme-preview" aria-label="Custom theme preview">Aa</span></div>
+          <label class="color-control">Reading background<input type="color" data-custom-color="bg" aria-label="Custom reading background"></label>
+          <label class="color-control">Text<input type="color" data-custom-color="text" aria-label="Custom text color"></label>
+          <label class="color-control">Muted text<input type="color" data-custom-color="muted" aria-label="Custom muted text color"></label>
+          <label class="color-control">Links<input type="color" data-custom-color="link" aria-label="Custom link color"></label>
+          <label class="color-control">Selection / highlight<input type="color" data-custom-color="selection" aria-label="Custom selection and highlight color"></label>
+          <button class="btn btn-ghost reset-settings-btn" id="reset-custom-theme-btn" type="button">Reset custom theme</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="settings-group" aria-labelledby="layout-title">
+        <div class="settings-section-heading">
+          <div class="setting-section-title" id="layout-title">Page layout</div>
+          <p>Control how pages flow and how much space they use.</p>
+        </div>
+        <div class="layout-grid">
+          <button class="layout-opt active" data-flow="paginated" id="flow-paginated-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Paginated</span>
+          </button>
+          <button class="layout-opt" data-flow="scrolled" id="flow-scrolled-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            <span>Continuous</span>
+          </button>
+        </div>
+        <div class="setting-subheading">Columns</div>
+        <div class="layout-grid">
+          <button class="layout-opt active" data-spread="auto" id="spread-auto-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            <span>Auto Spread</span>
+          </button>
+          <button class="layout-opt" data-spread="none" id="spread-single-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+            <span>Single Page</span>
+          </button>
+        </div>
+        <div class="setting-slider-row">
+          <div class="setting-row">
+          <div class="setting-label">
+            Line spacing
+            <span id="spacing-val">1.6</span>
+          </div>
+          </div>
+          <input type="range" id="spacing-slider" min="1.2" max="2.4" step="0.1" value="1.6" class="glass-slider" aria-label="Line spacing">
+        </div>
+        <div class="setting-slider-row">
+          <div class="setting-row">
+          <div class="setting-label">
+            Page margins
+            <span id="margin-val">10%</span>
+          </div>
+          </div>
+          <input type="range" id="margin-slider" min="2" max="24" step="2" value="10" class="glass-slider" aria-label="Page margins">
+        </div>
+      </section>
+
+      <button class="btn btn-ghost reset-settings-btn" id="reset-reader-settings-btn" type="button">Reset reading preferences</button>
+
+    </div>
+  </aside>
+
+  <!-- Annotations & Highlights Drawer (Right) -->
+  <aside id="annotations-panel" class="panel panel-right" aria-label="Annotations and highlights" aria-hidden="true">
+    <div class="panel-header">
+      <h3>Annotations</h3>
+      <button class="btn btn-glass icon-btn" id="close-annotations-btn" aria-label="Close annotations">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="annotation-tabs" role="tablist">
+      <button class="ann-tab active" data-tab="highlights" role="tab">Highlights</button>
+      <button class="ann-tab" data-tab="notes" role="tab">Notes</button>
+      <button class="ann-tab" data-tab="bookmarks" role="tab">Bookmarks</button>
+    </div>
+    <div class="panel-body ann-list" id="ann-list-content"></div>
+  </aside>
+
+  <!-- =========================================================
+       GLOBAL MODALS & OVERLAYS
+       ========================================================= -->
+
+  <!-- Import chooser -->
+  <div id="import-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="import-title">
+    <div class="modal-box import-modal-box">
+      <div class="modal-header">
+        <div>
+          <h2 id="import-title">Add to Vellune</h2>
+          <p class="modal-subtitle">Choose one EPUB or a folder to scan.</p>
+        </div>
+        <button class="btn btn-glass icon-btn" id="close-import-btn" aria-label="Close import chooser">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="import-options">
+        <button class="import-option" id="import-file-btn">
+          <span class="import-option-icon" aria-hidden="true">+</span>
+          <span><strong>File</strong><small>Choose one EPUB from your computer</small></span>
+        </button>
+        <button class="import-option" id="import-folder-btn">
+          <span class="import-option-icon" aria-hidden="true">&#9776;</span>
+          <span><strong>Folder</strong><small>Recursively import every EPUB inside</small></span>
+        </button>
+      </div>
+      <div id="import-status" class="import-status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- Book Details Modal -->
+  <div id="book-details-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="details-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="details-title">Book Details</h2>
+        <button class="btn btn-glass icon-btn" id="close-details-btn" aria-label="Close details">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="book-details-layout">
+        <div class="book-details-cover-col">
+          <img id="details-cover-img" class="book-details-cover" src="" alt="Book cover">
+          <div id="details-cover-fallback" class="book-details-cover-fallback hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+        </div>
+        <div class="book-details-info">
+          <div class="book-details-title" id="details-book-title">Title</div>
+          <div class="book-details-author" id="details-book-author">Author</div>
+          <p class="book-details-desc" id="details-book-desc">No description available for this volume.</p>
+          <div class="book-details-meta">
+            <div class="detail-kv">
+              <span class="detail-key">Progress</span>
+              <span class="detail-val" id="details-meta-progress">0%</span>
+            </div>
+            <div class="detail-kv">
+              <span class="detail-key">File Size</span>
+              <span class="detail-val" id="details-meta-size">—</span>
+            </div>
+            <div class="detail-kv">
+              <span class="detail-key">Added</span>
+              <span class="detail-val" id="details-meta-added">—</span>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding:0; margin-top:auto; gap:10px;">
+            <button class="btn btn-ghost" id="details-delete-btn" style="color:var(--status-error);">Remove Book</button>
+            <button class="btn btn-accent" id="details-read-btn">Read Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Note to Highlight Modal -->
+  <div id="note-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="note-modal-title">Add Note</h2>
+        <button class="btn btn-glass icon-btn" id="close-note-btn" aria-label="Close note dialog">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="note-quote" id="note-selected-text">"Selected quote will appear here"</div>
+      <textarea id="note-textarea" placeholder="Type your thoughts, reflections, or notes here..."></textarea>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="note-cancel-btn">Cancel</button>
+        <button class="btn btn-accent" id="note-save-btn">Save Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="shortcuts-title">Keyboard Shortcuts</h2>
+        <button class="btn btn-glass icon-btn" id="close-shortcuts-btn" aria-label="Close shortcuts">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="shortcuts-body">
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Next Page</span>
+          <div class="shortcut-keys"><kbd class="kbd">→</kbd> <kbd class="kbd">Space</kbd> <kbd class="kbd">J</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Previous Page</span>
+          <div class="shortcut-keys"><kbd class="kbd">←</kbd> <kbd class="kbd">Shift+Space</kbd> <kbd class="kbd">K</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Table of Contents</span>
+          <div class="shortcut-keys"><kbd class="kbd">T</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Reading Settings</span>
+          <div class="shortcut-keys"><kbd class="kbd">S</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Bookmark Page</span>
+          <div class="shortcut-keys"><kbd class="kbd">B</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Annotations &amp; Notes</span>
+          <div class="shortcut-keys"><kbd class="kbd">N</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Search in Book</span>
+          <div class="shortcut-keys"><kbd class="kbd">/</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Toggle Fullscreen</span>
+          <div class="shortcut-keys"><kbd class="kbd">F</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Library Search</span>
+          <div class="shortcut-keys"><kbd class="kbd">Ctrl</kbd>+<kbd class="kbd">K</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc">Close Overlay / Back</span>
+          <div class="shortcut-keys"><kbd class="kbd">Esc</kbd></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right-Click Context Menu -->
+  <div id="context-menu" class="ctx-menu hidden" role="menu" aria-label="Book actions">
+    <div class="ctx-item" id="ctx-read" role="menuitem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span>Read Now</span>
+    </div>
+    <div class="ctx-item" id="ctx-details" role="menuitem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>Book Details</span>
+    </div>
+    <div class="ctx-item" id="ctx-reveal" role="menuitem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>Reveal in Explorer</span>
+    </div>
+    <div class="ctx-sep" role="separator"></div>
+    <div class="ctx-item danger" id="ctx-delete" role="menuitem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      <span>Delete from Library</span>
+    </div>
+  </div>
+
+  <!-- Global Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/epubLoader.js"></script>
+  <script src="js/library.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

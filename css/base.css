@@ -1,0 +1,220 @@
+/* =============================================================
+   FOLIO — Base & Reset
+   ============================================================= */
+
+/* ── Reset ───────────────────────────────────────────────── */
+*,*::before,*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden; /* we manage scroll per-view */
+  line-height: 1.5;
+  transition:
+    background var(--dur-slow) var(--ease-io),
+    color var(--dur-slow) var(--ease-io);
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+img { max-width: 100%; display: block; }
+ul, ol { list-style: none; }
+svg { flex-shrink: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ── Selection ───────────────────────────────────────────── */
+::selection {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+/* ── Ambient Background ──────────────────────────────────── */
+#ambient-bg,
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity var(--dur-slow) var(--ease-io);
+}
+
+.orb,
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.6;
+  will-change: transform;
+}
+
+.orb-1 {
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(circle, var(--orb-1), transparent 65%);
+  top: -240px;
+  left: -140px;
+  animation: orbDrift1 28s ease-in-out infinite;
+}
+.orb-2 {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, var(--orb-2), transparent 65%);
+  bottom: -120px;
+  right: 8%;
+  animation: orbDrift2 22s ease-in-out infinite;
+}
+.orb-3 {
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, var(--orb-3), transparent 65%);
+  top: 45%;
+  left: 55%;
+  animation: orbDrift3 18s ease-in-out infinite;
+}
+
+@keyframes orbDrift1 {
+  0%,100%{ transform:translate(0,0) scale(1); }
+  33%     { transform:translate(40px,-50px) scale(1.06); }
+  66%     { transform:translate(-30px,30px) scale(0.94); }
+}
+@keyframes orbDrift2 {
+  0%,100%{ transform:translate(0,0) scale(1); }
+  40%     { transform:translate(-50px,-40px) scale(1.08); }
+  70%     { transform:translate(30px,20px) scale(0.95); }
+}
+@keyframes orbDrift3 {
+  0%,100%{ transform:translate(0,0) scale(1); }
+  50%     { transform:translate(-40px,40px) scale(1.1); }
+}
+
+/* ── View system ─────────────────────────────────────────── */
+.view {
+  position: relative;
+  z-index: var(--z-base);
+  width: 100%;
+  min-height: 100vh;
+  display: none;
+}
+.view.active { display: flex; flex-direction: column; }
+
+/* ── Typography helpers ──────────────────────────────────── */
+.text-sm     { font-size: 0.8125rem; }
+.text-base   { font-size: 0.9375rem; }
+.text-lg     { font-size: 1.125rem; }
+.text-xl     { font-size: 1.375rem; }
+.text-2xl    { font-size: 1.75rem; }
+.text-3xl    { font-size: 2.25rem; }
+
+.font-medium { font-weight: 500; }
+.font-semi   { font-weight: 600; }
+.font-bold   { font-weight: 700; }
+
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary  { color: var(--text-tertiary); }
+.text-accent    { color: var(--accent-text); }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.line-clamp-1 { display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden; }
+.line-clamp-2 { display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.line-clamp-3 { display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+
+/* ── Layout helpers ──────────────────────────────────────── */
+.flex        { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between{ display: flex; align-items: center; justify-content: space-between; }
+.flex-col    { display: flex; flex-direction: column; }
+.gap-1  { gap: var(--sp-1); }
+.gap-2  { gap: var(--sp-2); }
+.gap-3  { gap: var(--sp-3); }
+.gap-4  { gap: var(--sp-4); }
+.hidden { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+/* ── Divider ─────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--sp-2) 0;
+}
+
+/* ── Loading dot animation ───────────────────────────────── */
+.loading-dots span {
+  animation: dotBlink 1.4s infinite;
+  animation-fill-mode: both;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBlink {
+  0%,80%,100%{ opacity: 0; }
+  40%         { opacity: 1; }
+}
+
+/* ── Book loading animation ──────────────────────────────── */
+.loading-book {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 50px;
+}
+.loading-page {
+  width: 10px;
+  border-radius: 3px;
+  background: var(--accent-subtle);
+  animation: bookPulse 1.2s ease-in-out infinite;
+}
+.loading-page.p1 { height: 100%; animation-delay: 0s; }
+.loading-page.p2 { height: 75%;  animation-delay: 0.15s; }
+.loading-page.p3 { height: 55%;  animation-delay: 0.3s; }
+
+@keyframes bookPulse {
+  0%,100%{ opacity:0.3; transform:scaleY(0.85); }
+  50%    { opacity:1;   transform:scaleY(1); }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

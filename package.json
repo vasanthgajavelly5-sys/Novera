@@ -1,0 +1,88 @@
+{
+  "name": "vellune-reader",
+  "productName": "Vellune",
+  "version": "1.0.0",
+  "description": "A beautiful home for your books",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "validate:corpus": "node scripts/validate-corpus.js",
+    "dist": "electron-builder --win nsis",
+    "dist:win": "electron-builder --win nsis",
+    "build": "electron-builder --win nsis"
+  },
+  "keywords": [
+    "epub",
+    "reader",
+    "books",
+    "desktop",
+    "windows"
+  ],
+  "author": "Vellune",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.vellune.reader",
+    "productName": "Vellune",
+    "copyright": "Copyright 2026 Vellune",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "assets/**/*",
+      "node_modules/epubjs/**/*",
+      "node_modules/jszip/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "fileAssociations": [
+        {
+          "ext": "epub",
+          "name": "EPUB Electronic Publication",
+          "description": "Electronic Publication Book File",
+          "role": "Viewer",
+          "icon": "assets/icon.ico"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Vellune",
+      "uninstallDisplayName": "Vellune EPUB Reader",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico"
+    }
+  },
+  "dependencies": {
+    "epubjs": "^0.3.93",
+    "jszip": "^3.10.1"
+  }
+}
