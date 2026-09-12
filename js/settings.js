@@ -86,7 +86,7 @@ const ReaderSettings = (() => {
     FolioDB.setPref('readerSettings', currentSettings);
     updateUI();
 
-    if (shouldApply && window.EpubLoader) {
+    if (shouldApply && typeof EpubLoader !== 'undefined') {
       EpubLoader.applySettings(currentSettings);
     }
   }
@@ -148,7 +148,7 @@ const ReaderSettings = (() => {
       flowPaginated.addEventListener('click', () => {
         if (currentSettings.flow !== 'paginated') {
           setSetting('flow', 'paginated');
-          if (window.EpubLoader && EpubLoader.isLoaded()) {
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
             EpubLoader.reRender();
           }
         }
@@ -158,7 +158,7 @@ const ReaderSettings = (() => {
       flowScrolled.addEventListener('click', () => {
         if (currentSettings.flow !== 'scrolled') {
           setSetting('flow', 'scrolled');
-          if (window.EpubLoader && EpubLoader.isLoaded()) {
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
             EpubLoader.reRender();
           }
         }
@@ -172,7 +172,7 @@ const ReaderSettings = (() => {
       spreadAuto.addEventListener('click', () => {
         if (currentSettings.spread !== 'auto') {
           setSetting('spread', 'auto');
-          if (window.EpubLoader && EpubLoader.isLoaded()) {
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
             EpubLoader.reRender();
           }
         }
@@ -182,7 +182,7 @@ const ReaderSettings = (() => {
       spreadSingle.addEventListener('click', () => {
         if (currentSettings.spread !== 'none') {
           setSetting('spread', 'none');
-          if (window.EpubLoader && EpubLoader.isLoaded()) {
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
             EpubLoader.reRender();
           }
         }
@@ -195,7 +195,7 @@ const ReaderSettings = (() => {
         currentSettings = { ...DEFAULT_SETTINGS };
         FolioDB.setPref('readerSettings', currentSettings);
         updateUI();
-        if (window.EpubLoader && EpubLoader.isLoaded()) EpubLoader.reRender();
+        if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) EpubLoader.reRender();
       });
     }
   }

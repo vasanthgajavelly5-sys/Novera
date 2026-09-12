@@ -135,7 +135,7 @@ const ThemeManager = (() => {
     if (persist) FolioDB.setPref('readerTheme', themeName);
 
     // Apply directly into EPUB iframe page content
-    if (window.EpubLoader && EpubLoader.isLoaded()) {
+    if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
       EpubLoader.applyTheme(themeName);
     }
 
