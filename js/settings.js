@@ -6,6 +6,7 @@ const ReaderSettings = (() => {
   const DEFAULT_SETTINGS = {
     fontSize: 18,
     fontFamily: 'Lora',
+    alignment: 'left',
     lineHeight: 1.6,
     margin: 10,
     flow: 'paginated', // 'paginated' | 'scrolled'
@@ -19,6 +20,7 @@ const ReaderSettings = (() => {
     const allowedFonts = ['Lora', 'Playfair Display', 'Inter', 'Georgia', 'JetBrains Mono', 'Original'];
     merged.fontSize = Math.min(36, Math.max(12, Number(merged.fontSize) || DEFAULT_SETTINGS.fontSize));
     merged.fontFamily = allowedFonts.includes(merged.fontFamily) ? merged.fontFamily : DEFAULT_SETTINGS.fontFamily;
+    merged.alignment = ['left', 'right', 'justify'].includes(merged.alignment) ? merged.alignment : DEFAULT_SETTINGS.alignment;
     merged.lineHeight = Math.min(2.4, Math.max(1.2, Number(merged.lineHeight) || DEFAULT_SETTINGS.lineHeight));
     merged.margin = Math.min(24, Math.max(2, Number(merged.margin) || DEFAULT_SETTINGS.margin));
     merged.flow = ['paginated', 'scrolled'].includes(merged.flow) ? merged.flow : DEFAULT_SETTINGS.flow;
@@ -45,6 +47,12 @@ const ReaderSettings = (() => {
     // Typeface active state
     document.querySelectorAll('.font-opt').forEach(opt => {
       opt.classList.toggle('active', opt.dataset.font === currentSettings.fontFamily);
+    });
+
+    document.querySelectorAll('[data-alignment]').forEach(option => {
+      const isActive = option.dataset.alignment === currentSettings.alignment;
+      option.classList.toggle('active', isActive);
+      option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
 
     // Spacing slider & value
@@ -106,6 +114,12 @@ const ReaderSettings = (() => {
     document.querySelectorAll('.font-opt').forEach(opt => {
       opt.addEventListener('click', () => {
         setSetting('fontFamily', opt.dataset.font);
+      });
+    });
+
+    document.querySelectorAll('[data-alignment]').forEach(option => {
+      option.addEventListener('click', () => {
+        setSetting('alignment', option.dataset.alignment);
       });
     });
 

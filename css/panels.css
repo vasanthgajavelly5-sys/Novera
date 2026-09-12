@@ -175,6 +175,42 @@
 }
 .font-opt-name { font-size: 0.72rem; font-family: var(--font-ui); color: var(--text-tertiary); display: block; margin-top: 2px; }
 
+/* Text alignment choices */
+.alignment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+.alignment-opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font: 0.8rem var(--font-ui);
+  cursor: pointer;
+  transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+}
+.alignment-opt svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+.alignment-opt:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.alignment-opt.active {
+  background: var(--accent-subtle);
+  border-color: var(--border-accent);
+  color: var(--accent-text);
+}
+
 /* Theme preset grid */
 .theme-preset-grid {
   display: grid;

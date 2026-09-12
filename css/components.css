@@ -602,6 +602,44 @@
   color: var(--text-secondary);
   font-size: 0.8rem;
 }
+.import-progress {
+  padding: 0 var(--sp-6) var(--sp-5);
+}
+.import-progress[hidden] { display: none; }
+.import-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+.import-progress-meta span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.import-progress-meta span:last-child {
+  color: var(--accent-text);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.import-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--r-full);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+}
+.import-progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+  transition: width var(--dur-fast) var(--ease-out);
+}
 
 /* ── Sidebar / Panel base ────────────────────────────────── */
 .panel {

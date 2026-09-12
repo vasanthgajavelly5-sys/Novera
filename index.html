@@ -388,6 +388,21 @@
             <span class="font-opt-name">Original EPUB</span>
           </button>
         </div>
+        <div class="setting-subheading">Text alignment</div>
+        <div class="alignment-grid" role="group" aria-label="Text alignment">
+          <button class="alignment-opt active" data-alignment="left" type="button" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h11M4 14h16M4 18h11"/></svg>
+            <span>Left</span>
+          </button>
+          <button class="alignment-opt" data-alignment="right" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 10h11M4 14h16M9 18h11"/></svg>
+            <span>Right</span>
+          </button>
+          <button class="alignment-opt" data-alignment="justify" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            <span>Justify</span>
+          </button>
+        </div>
       </section>
 
       <section class="settings-group" aria-labelledby="reading-theme-title">
@@ -523,6 +538,15 @@
         </button>
       </div>
       <div id="import-status" class="import-status" aria-live="polite"></div>
+      <div class="import-progress" id="import-progress" hidden>
+        <div class="import-progress-meta">
+          <span id="import-progress-label">Preparing import...</span>
+          <span id="import-progress-percent">0%</span>
+        </div>
+        <div class="import-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Import progress">
+          <div class="import-progress-fill" id="import-progress-fill"></div>
+        </div>
+      </div>
     </div>
   </div>
 

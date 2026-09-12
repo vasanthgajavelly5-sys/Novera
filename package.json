@@ -1,7 +1,7 @@
 {
   "name": "novera",
   "productName": "Novera",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A beautiful home for your books",
   "main": "main.js",
   "scripts": {

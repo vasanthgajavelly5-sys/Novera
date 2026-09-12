@@ -186,6 +186,7 @@ const EpubLoader = (() => {
     const fontFam = settings.fontFamily === 'Original' ? 'inherit' : `'${settings.fontFamily}', Georgia, serif`;
     const headingFam = settings.fontFamily === 'Playfair Display' ? "'Playfair Display', Georgia, serif" : fontFam;
     const fontSize = settings.fontSize || 18;
+    const alignment = settings.alignment || 'left';
     const lineHeight = settings.lineHeight || 1.6;
     const margin = settings.margin ? `${settings.margin * 3}px` : '30px';
 
@@ -213,6 +214,7 @@ const EpubLoader = (() => {
         font-family: ${fontFam} !important;
         color: ${colors.text} !important;
         line-height: ${lineHeight} !important;
+        text-align: ${alignment} !important;
       }
       small, figcaption, cite, .muted, .secondary, [class*="muted"], [class*="secondary"] {
         color: ${colors.muted} !important;

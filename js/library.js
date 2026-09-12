@@ -209,10 +209,15 @@ const Library = (() => {
     const closeImportBtn = document.getElementById('close-import-btn');
     const importFileBtn = document.getElementById('import-file-btn');
     const importFolderBtn = document.getElementById('import-folder-btn');
+    const importProgress = document.getElementById('import-progress');
+    const importProgressLabel = document.getElementById('import-progress-label');
+    const importProgressPercent = document.getElementById('import-progress-percent');
+    const importProgressFill = document.getElementById('import-progress-fill');
 
     const closeImport = () => importModal?.classList.add('hidden');
     const openImport = () => {
       if (importStatus) importStatus.textContent = '';
+      updateImportProgress(0, '', false);
       importModal?.classList.remove('hidden');
     };
     const showImportErrors = (errors) => {
@@ -223,12 +228,21 @@ const Library = (() => {
     const setImportStatus = (message) => {
       if (importStatus) importStatus.textContent = message;
     };
+    const updateImportProgress = (percent, label = '', visible = true) => {
+      const value = Math.max(0, Math.min(100, Math.round(percent)));
+      if (importProgress) importProgress.hidden = !visible;
+      if (importProgressLabel && label) importProgressLabel.textContent = label;
+      if (importProgressPercent) importProgressPercent.textContent = `${value}%`;
+      if (importProgressFill) importProgressFill.style.width = `${value}%`;
+      const track = importProgress?.querySelector('[role="progressbar"]');
+      if (track) track.setAttribute('aria-valuenow', String(value));
+    };
 
     const handleFileChoice = async () => {
       if (window.folioDesktop?.openFileDialog) {
         const result = await window.folioDesktop.openFileDialog();
         showImportErrors(result.errors);
-        if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus);
+        if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
       } else {
         closeImport();
         fileInput?.click();
@@ -242,7 +256,7 @@ const Library = (() => {
       setImportStatus('Scanning folder...');
       const result = await window.folioDesktop.openFolderDialog();
       showImportErrors(result.errors);
-      if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus);
+      if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
       else if (!result.canceled) setImportStatus('No EPUB files found in that folder.');
     };
 
@@ -336,13 +350,15 @@ const Library = (() => {
     });
   }
 
-  async function processNativeFiles(fileList, setStatus = null) {
+  async function processNativeFiles(fileList, setStatus = null, updateProgress = null) {
     Utils.toast(`Importing ${fileList.length} book${fileList.length === 1 ? '' : 's'}...`);
 
     let importedCount = 0;
     const errors = [];
     for (const [index, file] of fileList.entries()) {
       try {
+        const completed = Math.round((index / fileList.length) * 100);
+        updateProgress?.(completed, `Importing ${index + 1} of ${fileList.length}: ${file.name}`);
         setStatus?.(`Importing ${index + 1} of ${fileList.length}: ${file.name}`);
         const existing = allBooks.find(book => book.sourcePath === file.path || book.diskPath === file.path);
         if (existing) {
@@ -371,6 +387,7 @@ const Library = (() => {
       }
     }
 
+    updateProgress?.(100, `Finished: ${importedCount} book${importedCount === 1 ? '' : 's'} imported`);
     showBatchErrors(errors);
     if (importedCount > 0) {
       Utils.toast(`Added ${importedCount} book${importedCount === 1 ? '' : 's'} to library`, 'success');
