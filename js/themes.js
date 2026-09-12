@@ -123,7 +123,14 @@ const ThemeManager = (() => {
     const readerView = document.getElementById('reader-view');
     const contentWrap = document.getElementById('reader-content-wrap');
     const epubContainer = document.getElementById('epub-container');
-    if (readerView) readerView.style.backgroundColor = colors.bg;
+    if (readerView) {
+      readerView.style.backgroundColor = colors.bg;
+      readerView.style.setProperty('--reader-theme-bg', colors.bg);
+      readerView.style.setProperty('--reader-theme-surface', colors.surface || colors.bg);
+      readerView.style.setProperty('--reader-theme-text', colors.text);
+      readerView.style.setProperty('--reader-theme-muted', colors.muted);
+      readerView.style.setProperty('--reader-theme-border', `${colors.muted}55`);
+    }
     if (contentWrap) contentWrap.style.backgroundColor = colors.bg;
     if (epubContainer) epubContainer.style.backgroundColor = colors.bg;
 

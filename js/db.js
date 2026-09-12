@@ -77,8 +77,21 @@ const FolioDB = (() => {
       return new Promise((resolve, reject) => {
         const transaction = db.transaction('books', 'readonly');
         const store = transaction.objectStore('books');
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
+        const books = [];
+        const req = store.openCursor();
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) {
+            resolve(books);
+            return;
+          }
+
+          // Library cards only need metadata. Keep large EPUB binaries out of startup memory.
+          const book = { ...cursor.value };
+          delete book.fileData;
+          books.push(book);
+          cursor.continue();
+        };
         req.onerror = () => reject(req.error);
       });
     },

@@ -9,7 +9,7 @@
   <!-- Google Fonts: Editorial Serif, Refined Display, Modern Sans, Clean Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Application Stylesheets -->
   <link rel="stylesheet" href="css/tokens.css">
@@ -42,22 +42,10 @@
       <div class="lib-nav-left">
         <div class="logo" role="banner">
           <div class="logo-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="3" width="16" height="22" rx="3" fill="url(#brand-g1)"/>
-              <rect x="7" y="5" width="16" height="22" rx="3" fill="url(#brand-g2)" opacity="0.6"/>
-              <line x1="6" y1="10" x2="14" y2="10" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="6" y1="14" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="6" y1="18" x2="11" y2="18" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-linecap="round"/>
-              <defs>
-                <linearGradient id="brand-g1" x1="2" y1="3" x2="18" y2="25" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#C4B5FD"/>
-                  <stop offset="100%" stop-color="#7C3AED"/>
-                </linearGradient>
-                <linearGradient id="brand-g2" x1="7" y1="5" x2="23" y2="27" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#A78BFA"/>
-                  <stop offset="100%" stop-color="#4C1D95"/>
-                </linearGradient>
-              </defs>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 3h10a2 2 0 0 1 2 2v15l-7-4-7 4V5a2 2 0 0 1 2-2Z" fill="url(#brand-bookmark)" stroke="#D7DDF0" stroke-width="0.8"/>
+              <path d="M9 8h6M9 11h6" stroke="#D7DDF0" stroke-width="1" stroke-linecap="round" opacity=".72"/>
+              <defs><linearGradient id="brand-bookmark" x1="5" y1="3" x2="19" y2="21" gradientUnits="userSpaceOnUse"><stop stop-color="#27365F"/><stop offset="1" stop-color="#7140D0"/></linearGradient></defs>
             </svg>
           </div>
           <span class="logo-wordmark">Novera</span>
@@ -229,6 +217,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         </button>
 
+        <button class="btn btn-glass icon-btn focus-settings-btn" id="focus-settings-btn" title="Reading settings" aria-label="Open reading settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 19.65 7l-.06.06A1.65 1.65 0 0 0 19.4 9c.24.61.82 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-.69 0-1.27.39-1.51 1Z"/></svg>
+        </button>
+
       </div>
     </header>
 
@@ -313,10 +305,6 @@
     </div>
 
     <!-- Keyboard Shortcut Floating Hint -->
-    <div id="shortcut-hint" aria-hidden="true">
-      <span>Press</span> <kbd class="shortcut-key">?</kbd> <span>for shortcuts</span>
-    </div>
-
   </div>
 
   <!-- =========================================================
@@ -363,7 +351,11 @@
           </div>
         </div>
         <div class="font-grid" aria-label="Font family">
-          <button class="font-opt active" data-font="Lora" style="font-family:'Lora',serif">
+          <button class="font-opt active" data-font="Cormorant Garamond" style="font-family:'Cormorant Garamond',serif">
+            Cormorant
+            <span class="font-opt-name">Refined Book Serif</span>
+          </button>
+          <button class="font-opt" data-font="Lora" style="font-family:'Lora',serif">
             Lora
             <span class="font-opt-name">Editorial Serif</span>
           </button>
@@ -393,6 +385,10 @@
           <button class="alignment-opt active" data-alignment="left" type="button" aria-pressed="true">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h11M4 14h16M4 18h11"/></svg>
             <span>Left</span>
+          </button>
+          <button class="alignment-opt" data-alignment="center" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg>
+            <span>Center</span>
           </button>
           <button class="alignment-opt" data-alignment="right" type="button" aria-pressed="false">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 10h11M4 14h16M9 18h11"/></svg>

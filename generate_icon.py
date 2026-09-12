@@ -7,48 +7,19 @@ def create_icon():
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Outer rounded square with deep luxury background
-    # Colors: #13111C gradient to #2E1065
-    margin = 32
-    rect = [margin, margin, size - margin, size - margin]
-    radius = 100
-
-    # Draw rounded background
-    draw.rounded_rectangle(rect, radius=radius, fill=(19, 17, 28, 255), outline=(139, 92, 246, 120), width=4)
-
-    # Book back cover
-    b_margin = 110
-    draw.rounded_rectangle([b_margin + 20, b_margin - 10, size - b_margin + 20, size - b_margin - 10], 
-                           radius=24, fill=(76, 29, 149, 180))
-
-    # Main Book cover (Rich violet gradient)
-    draw.rounded_rectangle([b_margin, b_margin, size - b_margin, size - b_margin], 
-                           radius=24, fill=(124, 58, 237, 255), outline=(196, 181, 253, 180), width=4)
-
-    # Spine highlight
-    draw.rounded_rectangle([b_margin + 6, b_margin + 6, b_margin + 36, size - b_margin - 6],
-                           radius=12, fill=(91, 33, 182, 255))
-    draw.line([b_margin + 42, b_margin + 12, b_margin + 42, size - b_margin - 12], fill=(196, 181, 253, 90), width=3)
-
-    # Pages lines inside book
-    line_x_start = b_margin + 70
-    line_x_end = size - b_margin - 40
-    for y_offset in [70, 110, 150, 190]:
-        y = b_margin + y_offset
-        w = 4 if y_offset == 70 else 3
-        opacity = 200 if y_offset < 150 else 140
-        draw.line([line_x_start, y, line_x_end - (30 if y_offset == 190 else 0), y], 
-                  fill=(255, 255, 255, opacity), width=w)
-
-    # Bookmark ribbon hanging down
-    ribbon_x = size - b_margin - 80
-    draw.polygon([
-        (ribbon_x, b_margin),
-        (ribbon_x + 36, b_margin),
-        (ribbon_x + 36, size - b_margin + 50),
-        (ribbon_x + 18, size - b_margin + 32),
-        (ribbon_x, size - b_margin + 50)
-    ], fill=(245, 158, 11, 255))
+    # Bookmark silhouette inspired by the supplied reference, using the existing icon files.
+    margin = 52
+    draw.rounded_rectangle([margin, margin, size - margin, size - margin], radius=104,
+                           fill=(13, 17, 31, 255), outline=(119, 129, 160, 130), width=5)
+    draw.rounded_rectangle([148, 92, 374, 392], radius=28,
+                           fill=(40, 53, 92, 255), outline=(206, 214, 236, 180), width=5)
+    draw.polygon([(118, 104), (300, 104), (300, 360), (209, 316), (118, 360)],
+                 fill=(28, 39, 77, 255), outline=(141, 153, 190, 210))
+    draw.polygon([(238, 104), (300, 104), (300, 360), (269, 345), (238, 360)],
+                 fill=(113, 64, 210, 255))
+    draw.line([(158, 158), (250, 158)], fill=(218, 224, 241, 210), width=7)
+    draw.line([(158, 194), (250, 194)], fill=(173, 184, 213, 170), width=6)
+    draw.line([(158, 230), (222, 230)], fill=(173, 184, 213, 130), width=6)
 
     # Save PNG
     png_path = os.path.join('assets', 'icon.png')

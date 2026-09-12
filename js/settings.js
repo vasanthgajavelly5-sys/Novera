@@ -5,7 +5,7 @@
 const ReaderSettings = (() => {
   const DEFAULT_SETTINGS = {
     fontSize: 18,
-    fontFamily: 'Lora',
+    fontFamily: 'Cormorant Garamond',
     alignment: 'left',
     lineHeight: 1.6,
     margin: 10,
@@ -17,10 +17,10 @@ const ReaderSettings = (() => {
 
   function normalizeSettings(settings) {
     const merged = { ...DEFAULT_SETTINGS, ...settings };
-    const allowedFonts = ['Lora', 'Playfair Display', 'Inter', 'Georgia', 'JetBrains Mono', 'Original'];
+    const allowedFonts = ['Cormorant Garamond', 'Lora', 'Playfair Display', 'Inter', 'Georgia', 'JetBrains Mono', 'Original'];
     merged.fontSize = Math.min(36, Math.max(12, Number(merged.fontSize) || DEFAULT_SETTINGS.fontSize));
     merged.fontFamily = allowedFonts.includes(merged.fontFamily) ? merged.fontFamily : DEFAULT_SETTINGS.fontFamily;
-    merged.alignment = ['left', 'right', 'justify'].includes(merged.alignment) ? merged.alignment : DEFAULT_SETTINGS.alignment;
+    merged.alignment = ['left', 'center', 'right', 'justify'].includes(merged.alignment) ? merged.alignment : DEFAULT_SETTINGS.alignment;
     merged.lineHeight = Math.min(2.4, Math.max(1.2, Number(merged.lineHeight) || DEFAULT_SETTINGS.lineHeight));
     merged.margin = Math.min(24, Math.max(2, Number(merged.margin) || DEFAULT_SETTINGS.margin));
     merged.flow = ['paginated', 'scrolled'].includes(merged.flow) ? merged.flow : DEFAULT_SETTINGS.flow;

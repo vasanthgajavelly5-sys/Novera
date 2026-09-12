@@ -99,6 +99,11 @@ const App = (() => {
     if (fsBtn) {
       fsBtn.addEventListener('click', toggleFullscreen);
     }
+
+    const focusSettingsBtn = document.getElementById('focus-settings-btn');
+    if (focusSettingsBtn) {
+      document.getElementById('reader-view')?.appendChild(focusSettingsBtn);
+    }
   }
 
   async function toggleFullscreen() {
@@ -161,7 +166,8 @@ const App = (() => {
     // Settings drawer
     const settingsButtons = [
       document.getElementById('settings-btn'),
-      document.getElementById('library-settings-btn')
+      document.getElementById('library-settings-btn'),
+      document.getElementById('focus-settings-btn')
     ].filter(Boolean);
     const closeSettingsBtn = document.getElementById('close-settings-btn');
     const settingsPanel = document.getElementById('settings-panel');

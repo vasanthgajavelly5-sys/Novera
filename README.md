@@ -74,6 +74,15 @@ Book binaries and metadata are stored locally in the browser IndexedDB database 
 
 The project is validated with JavaScript diagnostics, `npm run pack`, and a repeatable corpus pass that enumerates all `.epub` files, checks ZIP/container/OPF integrity, records failures by filename, and reports totals. Full reader rendering remains dependent on epub.js and the individual book's package quality; source-file limitations are recorded rather than silently skipped.
 
+## License
+
+Copyright © 2026 Vellune contributors.
+
+Vellune is free and open-source software licensed under the
+**GNU General Public License v3.0**. The SPDX identifier is `GPL-3.0-only`.
+See [COPYRIGHT.md](COPYRIGHT.md) for the project notice and the official
+[GNU GPL v3.0 text](https://www.gnu.org/licenses/gpl-3.0.html) for the license terms.
+
 ## Support & Donations
 
 If you find Novera useful and want to support its ongoing development, new features, and polish, consider buying a coffee:

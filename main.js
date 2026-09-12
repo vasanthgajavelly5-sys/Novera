@@ -125,10 +125,8 @@ function createWindow() {
     // If an EPUB was passed at launch, dispatch it now
     const initialFile = pendingOpenFile || extractEpubArg(process.argv);
     if (initialFile) {
-      setTimeout(() => {
-        pendingOpenFile = null;
-        dispatchOpenFile(initialFile);
-      }, 500);
+      pendingOpenFile = null;
+      dispatchOpenFile(initialFile);
     }
   });
 

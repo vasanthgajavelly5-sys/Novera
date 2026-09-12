@@ -121,6 +121,7 @@ const EpubLoader = (() => {
     rendition.on('rendered', (section, view) => {
       injectIframeStyles(view.document);
       bindIframeKeyboard(view.document);
+      bindIframeWheel(view.document);
     });
 
     // Text selection inside the EPUB iframe
@@ -155,7 +156,7 @@ const EpubLoader = (() => {
       const fontLink = doc.createElement('link');
       fontLink.id = 'folio-iframe-fonts';
       fontLink.rel = 'stylesheet';
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap';
+      fontLink.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap';
       doc.head.appendChild(fontLink);
     }
 
@@ -251,6 +252,26 @@ const EpubLoader = (() => {
         bubbles: true
       }));
     });
+  }
+
+  function bindIframeWheel(doc) {
+    if (!doc || doc.documentElement.dataset.folioWheelBound === 'true') return;
+    doc.documentElement.dataset.folioWheelBound = 'true';
+
+    let gestureLocked = false;
+    doc.addEventListener('wheel', (event) => {
+      const settings = ReaderSettings.getSettings();
+      if (settings.flow === 'scrolled' || Math.abs(event.deltaY) < 8 || gestureLocked) return;
+
+      event.preventDefault();
+      gestureLocked = true;
+      if (event.deltaY > 0) {
+        next();
+      } else {
+        prev();
+      }
+      setTimeout(() => { gestureLocked = false; }, 280);
+    }, { passive: false });
   }
 
   function positionSelectionToolbar(iframeWindow, selection) {

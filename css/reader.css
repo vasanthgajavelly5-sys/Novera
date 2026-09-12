@@ -22,10 +22,10 @@
   flex-shrink: 0;
   position: relative;
   z-index: var(--z-sticky);
-  background: var(--bg-glass-nav);
+  background: var(--reader-theme-surface, var(--bg-glass-nav));
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--reader-theme-border, var(--border-subtle));
   transition: opacity var(--dur-normal) var(--ease-io), transform var(--dur-normal) var(--ease-io);
 }
 #reader-toolbar.autohide {
@@ -47,20 +47,20 @@
 .toolbar-book-title  {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--reader-theme-text, var(--text-primary));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 280px;
 }
-.toolbar-book-author { font-size: 0.73rem; color: var(--text-tertiary); }
+.toolbar-book-author { font-size: 0.73rem; color: var(--reader-theme-muted, var(--text-tertiary)); }
 
 .toolbar-progress-info {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   font-size: 0.8rem;
-  color: var(--text-tertiary);
+  color: var(--reader-theme-muted, var(--text-tertiary));
   white-space: nowrap;
 }
 .toolbar-sep { opacity: 0.4; }
@@ -362,27 +362,23 @@ body.focus-mode #reader-main:hover #reader-toolbar {
   font-size: 0.875rem;
 }
 
-/* Shortcut badge */
-#shortcut-hint {
+/* Settings remain available as a quiet control in focused reading mode. */
+.focus-settings-btn { display: none; }
+body.focus-mode .focus-settings-btn {
+  display: inline-flex;
   position: fixed;
-  bottom: calc(38px + var(--sp-4));
-  right: var(--sp-6);
+  top: var(--sp-4);
+  right: var(--sp-4);
   z-index: var(--z-sticky);
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  opacity: 0;
-  transition: opacity var(--dur-normal);
-  pointer-events: none;
+  opacity: 0.52;
+  pointer-events: auto;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
 }
-#reader-view:hover #shortcut-hint { opacity: 1; }
-.shortcut-key {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
+body.focus-mode .focus-settings-btn:hover,
+body.focus-mode .focus-settings-btn:focus-visible {
+  opacity: 1;
+  background: var(--bg-hover);
+  border-color: var(--border-subtle);
 }
