@@ -66,6 +66,18 @@ npm run dist:win         # Creates the NSIS Windows installer
 
 `Master_EPUB_Library_All/` is an optional local regression corpus and is intentionally ignored by Git. Do not add books, private libraries, or generated corpus reports to commits.
 
+## Mobile app
+
+The `android` branch contains the Novera 4 mobile app in [mobile](mobile). It uses Expo and React Native so the Android and iOS applications share one TypeScript codebase.
+
+```powershell
+cd mobile
+npm install
+npm start
+```
+
+The mobile foundation includes the Novera library experience, EPUB document import entry point, offline-first messaging, reading progress, stats, app themes, and a touch-oriented reader shell. Native EPUB pagination, persistent file storage, highlights, and annotations are the next integration layer and are intentionally isolated from the UI shell.
+
 ## Troubleshooting
 
 - **A book will not import:** Check the displayed error. Novera rejects invalid archives, missing EPUB package files, encrypted EPUB resources, and DRM-protected books.
