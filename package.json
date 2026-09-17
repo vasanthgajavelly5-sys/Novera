@@ -1,7 +1,7 @@
 {
   "name": "novera",
   "productName": "Novera",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "description": "A private, open-source Windows EPUB reader",
   "main": "main.js",
   "scripts": {

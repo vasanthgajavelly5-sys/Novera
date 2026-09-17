@@ -17,7 +17,39 @@
   -webkit-backdrop-filter: var(--blur-lg);
   border-bottom: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-sm);
+  -webkit-app-region: drag;
 }
+.glass-nav button,
+.glass-nav input,
+.glass-nav select,
+.glass-nav a { -webkit-app-region: no-drag; }
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--sp-2);
+  -webkit-app-region: no-drag;
+}
+.window-control {
+  width: 32px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.window-control:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.window-control-close:hover {
+  background: var(--status-error);
+  color: var(--text-on-accent);
+}
+.window-control svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
 .logo-tagline {
   margin-left: var(--sp-3);
   color: var(--text-tertiary);

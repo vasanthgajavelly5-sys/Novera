@@ -33,6 +33,41 @@
   overflow-x: hidden;
 }
 
+#lib-content.is-loading > :not(#lib-loading) {
+  visibility: hidden;
+}
+
+.lib-loading {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin: var(--sp-8);
+  padding: var(--sp-10) var(--sp-8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  color: var(--text-secondary);
+}
+.lib-loading.hidden { display: none; }
+.lib-loading p {
+  font-size: 0.9rem;
+}
+.lib-loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--accent-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: libraryLoadSpin 0.9s linear infinite;
+}
+@keyframes libraryLoadSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Continue Reading strip ──────────────────────────────── */
 #continue-section {
   padding: var(--sp-6) var(--sp-8) 0;

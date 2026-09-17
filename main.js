@@ -108,6 +108,7 @@ function createWindow() {
     height: state.height || 850,
     minWidth: 960,
     minHeight: 640,
+    frame: false,
     backgroundColor: '#0C0C12',
     icon: iconPath,
     show: false,

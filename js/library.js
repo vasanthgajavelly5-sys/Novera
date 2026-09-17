@@ -11,6 +11,7 @@ const Library = (() => {
   let isListView = false;
   let activeContextBook = null;
   let deleteConfirmationResolver = null;
+  let isLoading = true;
 
   async function init() {
     bindDropAndFileInput();
@@ -20,11 +21,18 @@ const Library = (() => {
   }
 
   async function loadAndRenderBooks() {
-    allBooks = await NoveraDB.getAllBooks();
+    isLoading = true;
+    try {
+      allBooks = await NoveraDB.getAllBooks();
+    } finally {
+      isLoading = false;
+    }
     renderLibraryUI();
   }
 
   function renderLibraryUI() {
+    if (isLoading) return;
+
     const dropZone = document.getElementById('drop-zone');
     const libHeader = document.getElementById('lib-header');
     const continueSection = document.getElementById('continue-section');

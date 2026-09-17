@@ -51,7 +51,7 @@ const EpubLoader = (() => {
     if (container) container.innerHTML = '';
 
     try {
-      // Initialize ePub instance from ArrayBuffer
+       // Initialize ePub instance from ArrayBuffer
       currentBook = ePub(bookRecord.fileData);
 
       const settings = ReaderSettings.getSettings();
@@ -65,12 +65,17 @@ const EpubLoader = (() => {
         allowScriptedContent: false
       });
 
-      // Update toolbar metadata
-      document.getElementById('reader-title').textContent = bookRecord.title || 'Untitled';
-      document.getElementById('reader-author').textContent = bookRecord.author ? `by ${bookRecord.author}` : '';
+      // Register a default theme with body colors BEFORE display() so the
+      // iframe is painted with Novera's theme immediately instead of flashing
+      // epub.js's default white background / black text.
+      registerDefaultTheme();
 
       // Bind rendition lifecycle events
       bindRenditionEvents();
+
+      // Update toolbar metadata
+      document.getElementById('reader-title').textContent = bookRecord.title || 'Untitled';
+      document.getElementById('reader-author').textContent = bookRecord.author ? `by ${bookRecord.author}` : '';
 
       // Display initial location (saved CFI or target or beginning)
       const startCfi = targetCfi || bookRecord.currentCfi || undefined;
@@ -79,7 +84,7 @@ const EpubLoader = (() => {
       // Extract TOC navigation
       loadTableOfContents();
 
-      // Apply active theme and settings to rendition
+      // Apply active theme and settings to rendition (full inject)
       applyTheme(ThemeManager.getReaderTheme());
       applySettings(settings);
 
@@ -493,6 +498,28 @@ const EpubLoader = (() => {
     requestAnimationFrame(() => {
       applyStylesToAllContents();
       setTimeout(applyStylesToAllContents, 80);
+    });
+  }
+
+   function registerDefaultTheme() {
+    if (!rendition) return;
+
+    const themeName = ThemeManager.getReaderTheme();
+    const colors = ThemeManager.getThemeColors(themeName);
+    const settings = ReaderSettings.getSettings();
+
+    const fontFam = settings.fontFamily === 'Original'
+      ? 'inherit'
+      : `'${settings.fontFamily}', "Georgia", serif`;
+
+    rendition.themes.default({
+      body: {
+        backgroundColor: colors.bg,
+        color: colors.text,
+        fontFamily: fontFam,
+        fontSize: `${settings.fontSize || 18}px`,
+        lineHeight: settings.lineHeight || 1.6
+      }
     });
   }
 

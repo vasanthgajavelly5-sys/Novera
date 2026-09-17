@@ -6,6 +6,7 @@
 /* ── Dark theme (default) ────────────────────────────────── */
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
   /* Backgrounds */
   --bg-base:        #11151B;
   --bg-surface:     #171C24;
@@ -90,6 +91,7 @@
 
 /* ── Light theme ─────────────────────────────────────────── */
 [data-theme="light"] {
+  color-scheme: light;
   --bg-base:        #EEECf8;
   --bg-surface:     #FFFFFF;
   --bg-elevated:    #F6F4FE;

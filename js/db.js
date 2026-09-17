@@ -4,15 +4,16 @@
  */
 
 const NoveraDB = (() => {
-  // Kept unchanged so existing Folio-era libraries and preferences remain available.
-  const DB_NAME = 'FolioReaderDB';
+  const DB_NAME = 'NoveraDB';
   const DB_VERSION = 1;
   let dbInstance = null;
+  let dbPromise = null;
 
   function openDB() {
     if (dbInstance) return Promise.resolve(dbInstance);
+    if (dbPromise) return dbPromise;
 
-    return new Promise((resolve, reject) => {
+    dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onupgradeneeded = (event) => {
@@ -42,14 +43,18 @@ const NoveraDB = (() => {
 
       request.onsuccess = (event) => {
         dbInstance = event.target.result;
+        dbPromise = null;
         resolve(dbInstance);
       };
 
       request.onerror = (event) => {
         console.error('Failed to open NoveraDB:', event.target.error);
+        dbPromise = null;
         reject(event.target.error);
       };
     });
+
+    return dbPromise;
   }
 
   // Generic transaction helper

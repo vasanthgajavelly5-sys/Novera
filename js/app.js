@@ -10,10 +10,15 @@ const App = (() => {
   let nativeFullscreen = false;
 
   async function init() {
-    // Initialize subsystem managers in sequence
-    await ThemeManager.init();
-    await ReaderSettings.init();
-    await Library.init();
+    // Initialize subsystem managers in parallel (they share a single cached DB
+    // connection, so parallel init avoids sequential IndexedDB round-trips)
+    showLibraryLoading(true);
+    await Promise.all([
+      ThemeManager.init(),
+      ReaderSettings.init(),
+      Library.init()
+    ]);
+    hideLibraryLoading();
 
     window.noveraDesktop?.getVersion?.().then(version => {
       const versionEl = document.getElementById('about-version');
@@ -26,6 +31,7 @@ const App = (() => {
     bindKeyboardShortcuts();
     bindSearchOverlay();
     bindFullscreenState();
+    bindWindowControls();
 
     console.log('Novera EPUB Reader successfully initialized');
   }
@@ -150,6 +156,18 @@ const App = (() => {
     window.noveraDesktop?.onNativeFullscreenChanged((isFullscreen) => {
       nativeFullscreen = isFullscreen;
       setFocusMode(isFullscreen);
+    });
+  }
+
+  function bindWindowControls() {
+    document.addEventListener('click', (event) => {
+      const control = event.target.closest('[data-window-action]');
+      if (!control || !window.noveraDesktop) return;
+
+      const action = control.dataset.windowAction;
+      if (action === 'minimize') window.noveraDesktop.minimizeWindow();
+      if (action === 'maximize') window.noveraDesktop.maximizeWindow();
+      if (action === 'close') window.noveraDesktop.closeWindow();
     });
   }
 
@@ -455,6 +473,23 @@ const App = (() => {
         }
       }
     });
+  }
+
+  function showLibraryLoading(show) {
+    const loader = document.getElementById('lib-loading');
+    const content = document.getElementById('lib-content');
+    const dropZone = document.getElementById('drop-zone');
+    const libHeader = document.getElementById('lib-header');
+    if (loader) loader.classList.toggle('hidden', !show);
+    if (content) content.classList.toggle('is-loading', show);
+    if (dropZone) dropZone.classList.toggle('loading-books', show);
+    if (!show) {
+      if (dropZone) dropZone.classList.remove('loading-books');
+    }
+  }
+
+  function hideLibraryLoading() {
+    showLibraryLoading(false);
   }
 
   return {
