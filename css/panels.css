@@ -580,3 +580,107 @@
   font-family: var(--font-mono);
   color: var(--text-secondary);
 }
+
+/* ── Full Settings Modal ─────────────────────────────────── */
+#full-settings-modal .full-settings-box {
+  max-width: 820px;
+  max-height: 92vh;
+}
+.full-settings-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.full-settings-nav {
+  flex-shrink: 0;
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-glass);
+}
+.full-settings-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.full-settings-nav-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-4);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all var(--dur-fast);
+  white-space: nowrap;
+}
+.full-settings-nav-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.full-settings-nav-btn.active,
+.full-settings-nav-btn[aria-selected="true"] {
+  background: var(--accent-subtle);
+  border-color: var(--border-accent);
+  color: var(--accent-text);
+}
+.full-settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-5) var(--sp-6);
+}
+.full-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  animation: fadeIn var(--dur-fast) var(--ease-out);
+}
+.full-settings-section[hidden] {
+  display: none;
+}
+.full-settings-section h3 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin: 0 0 var(--sp-2);
+}
+.full-settings-placeholder {
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  #full-settings-modal .full-settings-box {
+    max-width: 96vw;
+    max-height: 96vh;
+    border-radius: var(--r-xl);
+  }
+  .full-settings-nav ul {
+    gap: 4px;
+  }
+  .full-settings-nav-btn {
+    padding: var(--sp-2) var(--sp-3);
+    font-size: 0.75rem;
+  }
+  .full-settings-content {
+    padding: var(--sp-4) var(--sp-4);
+  }
+}
+
+@media (max-width: 420px) {
+  .full-settings-nav ul {
+    justify-content: center;
+  }
+  .full-settings-nav-btn {
+    padding: var(--sp-2) var(--sp-2);
+    font-size: 0.7rem;
+  }
+}

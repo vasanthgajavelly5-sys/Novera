@@ -111,6 +111,12 @@ const App = (() => {
       fsBtn.addEventListener('click', toggleFullscreen);
     }
 
+    // Full Settings Expand button
+    const fullSettingsBtn = document.getElementById('full-settings-btn');
+    if (fullSettingsBtn) {
+      fullSettingsBtn.addEventListener('click', openFullSettings);
+    }
+
     const focusSettingsBtn = document.getElementById('focus-settings-btn');
     if (focusSettingsBtn) {
       document.getElementById('reader-view')?.appendChild(focusSettingsBtn);
@@ -270,6 +276,27 @@ const App = (() => {
         if (textarea) textarea.value = '';
       });
     }
+
+    // Full Settings Modal
+    const fullSettingsModal = document.getElementById('full-settings-modal');
+    const closeFullSettingsBtn = document.getElementById('close-full-settings-btn');
+    const fullSettingsNavBtns = document.querySelectorAll('.full-settings-nav-btn');
+
+    if (closeFullSettingsBtn) {
+      closeFullSettingsBtn.addEventListener('click', closeFullSettings);
+    }
+    if (fullSettingsModal) {
+      fullSettingsModal.addEventListener('click', (e) => {
+        if (e.target === fullSettingsModal) closeFullSettings();
+      });
+    }
+
+    fullSettingsNavBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.dataset.section;
+        switchFullSettingsSection(section);
+      });
+    });
   }
 
   function toggleDrawer(panel) {
@@ -295,6 +322,38 @@ const App = (() => {
     document.getElementById('shortcuts-modal')?.classList.add('hidden');
     document.getElementById('book-details-modal')?.classList.add('hidden');
     document.getElementById('note-modal')?.classList.add('hidden');
+    closeFullSettings();
+  }
+
+  function openFullSettings() {
+    const modal = document.getElementById('full-settings-modal');
+    if (!modal) return;
+    closeAllPanels();
+    modal.classList.remove('hidden');
+    // Focus the close button for accessibility
+    const closeBtn = document.getElementById('close-full-settings-btn');
+    setTimeout(() => closeBtn?.focus(), 0);
+  }
+
+  function closeFullSettings() {
+    const modal = document.getElementById('full-settings-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+  }
+
+  function switchFullSettingsSection(section) {
+    // Update nav buttons
+    document.querySelectorAll('.full-settings-nav-btn').forEach(btn => {
+      const isActive = btn.dataset.section === section;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive);
+    });
+    // Update content sections
+    document.querySelectorAll('.full-settings-section').forEach(sec => {
+      const isActive = sec.id === `${section}-panel`;
+      sec.classList.toggle('active', isActive);
+      sec.hidden = !isActive;
+    });
   }
 
   function bindSelectionToolbar() {
