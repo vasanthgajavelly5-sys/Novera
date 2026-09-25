@@ -977,9 +977,11 @@ const Library = (() => {
       if (event.target === deleteModal) resolveDeleteConfirmation(false);
     });
 
-    // Close context menu on window click
-    window.addEventListener('click', () => {
-      if (ctxMenu) ctxMenu.classList.add('hidden');
+    // Close context menu on window click (but not when clicking inside context menu or submenu)
+    window.addEventListener('click', (event) => {
+      if (ctxMenu && !ctxMenu.contains(event.target)) {
+        ctxMenu.classList.add('hidden');
+      }
     });
 
     if (ctxRead) {
