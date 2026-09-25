@@ -4,17 +4,13 @@ const os = require('os');
 const path = require('path');
 const packageJson = require('../package.json');
 
-const publisher = process.env.APPX_PUBLISHER;
-if (!publisher || publisher === 'CN=ms') {
-  console.error('Store build blocked: set APPX_PUBLISHER to the exact Partner Center publisher identity before running npm run dist:store.');
-  process.exit(1);
-}
-
 const config = JSON.parse(JSON.stringify(packageJson.build));
 config.appx = {
   ...(config.appx || {}),
-  publisher,
-  publisherDisplayName: process.env.APPX_PUBLISHER_DISPLAY_NAME || packageJson.author
+  publisher: 'CN=65585C77-A179-46B9-B0CA-60D868923F03',
+  publisherDisplayName: 'Lirune',
+  identityName: 'Lirune.LiruneReader',
+  applicationId: 'Lirune.LiruneReader'
 };
 config.win = { ...(config.win || {}), target: [{ target: 'appx', arch: ['x64'] }] };
 const configPath = path.join(os.tmpdir(), `novera-store-${process.pid}.json`);

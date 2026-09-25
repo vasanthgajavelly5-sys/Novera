@@ -27,6 +27,11 @@ if (process.argv.includes('--store') && fs.existsSync(storePackage) && fs.statSy
   require('child_process').execFileSync('powershell.exe', ['-NoProfile', '-Command', `Copy-Item '${storePackage}' '${archive}'; Expand-Archive -LiteralPath '${archive}' -DestinationPath '${extractDir}' -Force`]);
   const manifest = fs.readFileSync(path.join(extractDir, 'AppxManifest.xml'), 'utf8');
   if (/Publisher=['"]CN=ms['"]/.test(manifest)) failures.push('Store package still uses electron-builder placeholder publisher CN=ms');
+  if (!/Name=['"]Lirune\.LiruneReader['"]/.test(manifest)) failures.push('Store package missing Identity Name="Lirune.LiruneReader"');
+  if (!/Publisher=['"]CN=65585C77-A179-46B9-B0CA-60D868923F03['"]/.test(manifest)) failures.push('Store package missing Publisher="CN=65585C77-A179-46B9-B0CA-60D868923F03"');
+  if (!manifest.includes('<PublisherDisplayName>Lirune</PublisherDisplayName>')) failures.push('Store package missing PublisherDisplayName="Lirune"');
+  if (!new RegExp(`Version=['"]${version}\\.0['"]`).test(manifest)) failures.push(`Store package missing Version="${version}.0"`);
+  if (!/Id=['"]Lirune\.LiruneReader['"]/.test(manifest)) failures.push('Store package missing Application Id="Lirune.LiruneReader"');
   fs.rmSync(archive, { force: true });
   fs.rmSync(extractDir, { recursive: true, force: true });
 }
@@ -37,6 +42,12 @@ if (failures.length) {
 console.log(`Validated Lirune Reader ${version} Windows release artifacts.`);
 if (process.argv.includes('--store')) {
   console.log(`Store package: ${storePackage}`);
+  console.log('Manifest values verified:');
+  console.log('  Identity Name = Lirune.LiruneReader');
+  console.log('  Publisher = CN=65585C77-A179-46B9-B0CA-60D868923F03');
+  console.log('  PublisherDisplayName = Lirune');
+  console.log(`  Version = ${version}.0`);
+  console.log('  Application Id = Lirune.LiruneReader');
 } else {
   console.log(`Installer: ${installer}`);
   console.log(`Application: ${executable}`);

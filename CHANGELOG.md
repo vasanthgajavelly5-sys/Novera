@@ -1,3 +1,11 @@
+## 4.0.1 - Built-in Guide & Store Release
+
+- Replaced legacy sample book with an original built-in first-run tutorial: "Welcome to Lirune".
+- Added a full offline guide covering library management, reading customization, keyboard shortcuts, annotations, and local-first backups.
+- Replaced sample cover with an original dynamic canvas-generated Lirune design.
+- Removed all legacy sample references and third-party sample text.
+- Finalized Microsoft Store package identity and release assets.
+
 ## 4.0.0 - Production hardening
 
 - Moved managed EPUB binaries out of normal IndexedDB library reads.

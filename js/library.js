@@ -955,9 +955,9 @@ const Library = (() => {
     return tmp.textContent || tmp.innerText || '';
   }
 
-  // Built-in Sample Classic EPUB Generator (Alice's Adventures in Wonderland)
+  // Built-in Sample Guide EPUB Generator (Welcome to Lirune)
   async function generateSampleBook() {
-    Utils.toast('Generating sample book: "Alice in Wonderland"...');
+    Utils.toast('Generating sample book: "Welcome to Lirune"...');
 
     try {
       const zip = new JSZip();
@@ -977,24 +977,40 @@ const Library = (() => {
       zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:title>Alice's Adventures in Wonderland</dc:title>
-    <dc:creator>Lewis Carroll</dc:creator>
+    <dc:title>Welcome to Lirune</dc:title>
+    <dc:creator>Lirune Reader</dc:creator>
     <dc:language>en</dc:language>
-    <dc:identifier id="BookId">urn:uuid:novera-sample-alice-1865</dc:identifier>
-    <dc:description>The classic 1865 English tale of Alice tumbling down a rabbit hole into a fantastical, whimsical world of curious creatures.</dc:description>
-    <dc:publisher>Lirune Classics</dc:publisher>
+    <dc:identifier id="BookId">urn:uuid:lirune-welcome-guide-4-0</dc:identifier>
+    <dc:description>A short built-in guide to help you explore Lirune Reader's library, reading tools, customization, annotations, keyboard shortcuts, and local-first features.</dc:description>
+    <dc:publisher>Lirune Reader</dc:publisher>
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
-    <item id="style" href="style.css" media-type="text/css"/>
+    <item id="style" href="styles.css" media-type="text/css"/>
     <item id="ch1" href="chapter1.html" media-type="application/xhtml+xml"/>
     <item id="ch2" href="chapter2.html" media-type="application/xhtml+xml"/>
     <item id="ch3" href="chapter3.html" media-type="application/xhtml+xml"/>
+    <item id="ch4" href="chapter4.html" media-type="application/xhtml+xml"/>
+    <item id="ch5" href="chapter5.html" media-type="application/xhtml+xml"/>
+    <item id="ch6" href="chapter6.html" media-type="application/xhtml+xml"/>
+    <item id="ch7" href="chapter7.html" media-type="application/xhtml+xml"/>
+    <item id="ch8" href="chapter8.html" media-type="application/xhtml+xml"/>
+    <item id="ch9" href="chapter9.html" media-type="application/xhtml+xml"/>
+    <item id="ch10" href="chapter10.html" media-type="application/xhtml+xml"/>
+    <item id="ch11" href="chapter11.html" media-type="application/xhtml+xml"/>
   </manifest>
   <spine toc="ncx">
     <itemref idref="ch1"/>
     <itemref idref="ch2"/>
     <itemref idref="ch3"/>
+    <itemref idref="ch4"/>
+    <itemref idref="ch5"/>
+    <itemref idref="ch6"/>
+    <itemref idref="ch7"/>
+    <itemref idref="ch8"/>
+    <itemref idref="ch9"/>
+    <itemref idref="ch10"/>
+    <itemref idref="ch11"/>
   </spine>
 </package>`);
 
@@ -1002,34 +1018,74 @@ const Library = (() => {
       zip.file('OEBPS/toc.ncx', `<?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="urn:uuid:novera-sample-alice-1865"/>
+    <meta name="dtb:uid" content="urn:uuid:lirune-welcome-guide-4-0"/>
   </head>
-  <docTitle><text>Alice's Adventures in Wonderland</text></docTitle>
+  <docTitle><text>Welcome to Lirune</text></docTitle>
   <navMap>
     <navPoint id="np-1" playOrder="1">
-      <navLabel><text>Chapter I: Down the Rabbit-Hole</text></navLabel>
+      <navLabel><text>1. Welcome to Lirune</text></navLabel>
       <content src="chapter1.html"/>
     </navPoint>
     <navPoint id="np-2" playOrder="2">
-      <navLabel><text>Chapter II: The Pool of Tears</text></navLabel>
+      <navLabel><text>2. Your Library</text></navLabel>
       <content src="chapter2.html"/>
     </navPoint>
     <navPoint id="np-3" playOrder="3">
-      <navLabel><text>Chapter III: A Caucus-Race and a Long Tale</text></navLabel>
+      <navLabel><text>3. Opening and Importing Books</text></navLabel>
       <content src="chapter3.html"/>
+    </navPoint>
+    <navPoint id="np-4" playOrder="4">
+      <navLabel><text>4. Reading Comfortably</text></navLabel>
+      <content src="chapter4.html"/>
+    </navPoint>
+    <navPoint id="np-5" playOrder="5">
+      <navLabel><text>5. Finding Your Place</text></navLabel>
+      <content src="chapter5.html"/>
+    </navPoint>
+    <navPoint id="np-6" playOrder="6">
+      <navLabel><text>6. Highlights, Notes and Bookmarks</text></navLabel>
+      <content src="chapter6.html"/>
+    </navPoint>
+    <navPoint id="np-7" playOrder="7">
+      <navLabel><text>7. Organizing Your Library</text></navLabel>
+      <content src="chapter7.html"/>
+    </navPoint>
+    <navPoint id="np-8" playOrder="8">
+      <navLabel><text>8. Backups, Storage and Privacy</text></navLabel>
+      <content src="chapter8.html"/>
+    </navPoint>
+    <navPoint id="np-9" playOrder="9">
+      <navLabel><text>9. Keyboard Shortcuts</text></navLabel>
+      <content src="chapter9.html"/>
+    </navPoint>
+    <navPoint id="np-10" playOrder="10">
+      <navLabel><text>10. Troubleshooting</text></navLabel>
+      <content src="chapter10.html"/>
+    </navPoint>
+    <navPoint id="np-11" playOrder="11">
+      <navLabel><text>11. Support Lirune Reader</text></navLabel>
+      <content src="chapter11.html"/>
     </navPoint>
   </navMap>
 </ncx>`);
 
-      // OEBPS/style.css
-      zip.file('OEBPS/style.css', `
-body { font-family: serif; line-height: 1.6; margin: 5%; }
-h1 { text-align: center; margin-top: 2em; margin-bottom: 0.5em; font-size: 1.8em; }
-h2 { text-align: center; margin-bottom: 1.5em; font-weight: normal; font-style: italic; opacity: 0.8; font-size: 1.1em; }
-p { margin-bottom: 1.2em; text-indent: 1.5em; }
-p.lead { text-indent: 0; font-size: 1.1em; }
-p.lead::first-letter { font-size: 3.2em; float: left; line-height: 0.8; padding-right: 0.1em; font-weight: bold; }
-blockquote { margin: 1.5em 2em; font-style: italic; }
+      // OEBPS/styles.css
+      zip.file('OEBPS/styles.css', `
+body { font-family: serif; line-height: 1.6; margin: 5%; color: inherit; }
+h1 { text-align: center; margin-top: 1.6em; margin-bottom: 0.3em; font-size: 1.7em; }
+h2 { text-align: center; margin-bottom: 1.5em; font-weight: normal; font-style: italic; opacity: 0.85; font-size: 1.05em; }
+h3 { margin-top: 1.4em; margin-bottom: 0.4em; font-size: 1.15em; font-weight: bold; }
+p { margin-bottom: 1.15em; text-indent: 0; line-height: 1.65; }
+p.lead { font-size: 1.1em; line-height: 1.7; font-weight: 500; }
+ul, ol { margin: 0.8em 0 1.2em 1.5em; padding: 0; }
+li { margin-bottom: 0.45em; line-height: 1.6; }
+table { width: 100%; border-collapse: collapse; margin: 1.2em 0 1.5em 0; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid rgba(128, 128, 128, 0.25); }
+th { font-weight: bold; }
+kbd { display: inline-block; padding: 2px 6px; font-family: monospace; font-size: 0.9em; background: rgba(128, 128, 128, 0.15); border-radius: 4px; border: 1px solid rgba(128, 128, 128, 0.3); }
+blockquote { margin: 1.2em 1.5em; padding-left: 1em; border-left: 3px solid rgba(128, 128, 128, 0.35); font-style: italic; }
+a { color: inherit; text-decoration: underline; }
+.support-card { margin: 2em 0; padding: 1.5em; border: 1px solid rgba(128, 128, 128, 0.25); border-radius: 8px; text-align: center; }
 `);
 
       // OEBPS/chapter1.html
@@ -1037,16 +1093,25 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>Chapter I: Down the Rabbit-Hole</title>
-  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>Chapter 1: Welcome to Lirune</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
 </head>
 <body>
-  <h1>CHAPTER I</h1>
-  <h2>Down the Rabbit-Hole</h2>
-  <p class="lead">Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, “and what is the use of a book,” thought Alice “without pictures or conversations?”</p>
-  <p>So she was considering in her own mind (as well as she could, for the hot day made her feel very sleepy and stupid), whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her.</p>
-  <p>There was nothing so very remarkable in that; nor did Alice think it so very much out of the way to hear the Rabbit say to itself, “Oh dear! Oh dear! I shall be late!” (when she thought it over afterwards, it occurred to her that she ought to have wondered at this, but at the time it all seemed quite natural); but when the Rabbit actually took a watch out of its waistcoat-pocket, and looked at it, and then hurried on, Alice started to her feet, for it flashed across her mind that she had never before seen a rabbit with either a waistcoat-pocket, or a watch to take out of it, and burning with curiosity, she ran across the field after it, and fortunately was just in time to see it pop down a large rabbit-hole under the hedge.</p>
-  <p>In another moment down went Alice after it, never once considering in the world how in the world she was to get out again.</p>
+  <h1>Chapter 1</h1>
+  <h2>Welcome to Lirune</h2>
+  <p class="lead">Welcome to Lirune Reader.</p>
+  <p>Lirune is a calm, local-first EPUB reader for Windows. It is designed to keep your personal reading experience focused and your library safely on your computer.</p>
+  <p>This introductory guide is built directly into Lirune so that you can explore the application's reading tools, navigation, and customization right away—without needing to search for an external EPUB file first.</p>
+  <h3>Core Philosophy</h3>
+  <p>Lirune is built upon five foundational principles:</p>
+  <ul>
+    <li><strong>Local:</strong> Your books, reading progress, and annotations reside directly on your device.</li>
+    <li><strong>Private:</strong> There are no tracking scripts, analytics, or mandatory cloud logins monitoring what you read.</li>
+    <li><strong>Focused:</strong> A clean, quiet reading surface free from clutter, popups, and unnecessary interruptions.</li>
+    <li><strong>Customizable:</strong> Thoughtful typography, comfortable reading palettes, flexible layout flows, and personalized window accents.</li>
+    <li><strong>Windows-Friendly:</strong> Deep integration with Windows windowing, keyboard shortcuts, and file associations.</li>
+  </ul>
+  <p>Whether you are reading technical documentation, classic literature, or personal research notes, Lirune aims to give your books the calm digital environment they deserve.</p>
 </body>
 </html>`);
 
@@ -1055,15 +1120,32 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>Chapter II: The Pool of Tears</title>
-  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>Chapter 2: Your Library</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
 </head>
 <body>
-  <h1>CHAPTER II</h1>
-  <h2>The Pool of Tears</h2>
-  <p class="lead">“Curiouser and curiouser!” cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); “now I’m opening out like the largest telescope that ever was! Good-bye, feet!” (for when she looked down at her feet, they seemed to be almost out of sight, they were getting so far off).</p>
-  <p>“Oh, my poor little feet, I wonder who will put on your shoes and stockings for you now, dears? I’m sure I shan’t be able! I shall be a great deal too far off to trouble myself about you: you must manage the best way you can;—but I must be kind to them,” thought Alice, “or perhaps they won’t walk the way I want to go! Let me see: I’ll give them a new pair of boots every Christmas.”</p>
-  <p>And she went on planning to herself how she would manage it. “They must go by the carrier,” she thought; “and how funny it’ll seem, sending presents to one’s own feet! And how odd the directions will look!”</p>
+  <h1>Chapter 2</h1>
+  <h2>Your Library</h2>
+  <p class="lead">The Library is your personal reading headquarters, displaying your book collection with elegance and clarity.</p>
+  <p>When you add books, Lirune automatically extracts their embedded cover artwork and metadata, presenting them in a responsive, beautifully spaced gallery.</p>
+  <h3>Views and Navigation</h3>
+  <ul>
+    <li><strong>Grid View and List View:</strong> Toggle between a rich visual cover grid and a structured, compact list view depending on your screen size and organizational preference.</li>
+    <li><strong>Library Search:</strong> Quickly locate any title using the search bar (or by pressing <kbd>Ctrl + K</kbd>). Library search searches through book metadata, including titles and author names.</li>
+    <li><strong>Sorting:</strong> Sort your library by recently read, date added, title alphabetically, or author.</li>
+    <li><strong>Reading Progress:</strong> Every book card displays a subtle progress indicator showing your completion percentage and current chapter.</li>
+    <li><strong>Continue Reading:</strong> At the top of your library, the Continue Reading banner highlights your most recently active book for seamless one-click resumption.</li>
+  </ul>
+  <h3>Status Filters</h3>
+  <p>Keep your collection tidy by switching between status tabs:</p>
+  <ul>
+    <li><strong>All:</strong> Displays every book present in your local library.</li>
+    <li><strong>Unread:</strong> Shows books you have imported but have not yet begun reading.</li>
+    <li><strong>In Progress:</strong> Focuses on the books you are actively reading right now.</li>
+    <li><strong>Finished:</strong> Holds completed works once you turn the final page.</li>
+    <li><strong>Favorites:</strong> Instantly narrows your bookshelf to the volumes you have starred for quick reference.</li>
+  </ul>
+  <p>You can also create custom <strong>Collections</strong> to group titles by topic, project, or genre without altering the files on your disk.</p>
 </body>
 </html>`);
 
@@ -1072,14 +1154,287 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>Chapter III: A Caucus-Race and a Long Tale</title>
-  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>Chapter 3: Opening and Importing Books</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
 </head>
 <body>
-  <h1>CHAPTER III</h1>
-  <h2>A Caucus-Race and a Long Tale</h2>
-  <p class="lead">They were indeed a queer-looking party that assembled on the bank—the birds with draggled feathers, the animals with their fur clinging close to them, and all dripping wet, cross, and uncomfortable.</p>
-  <p>The first question of course was, how to get dry again: they had a consultation about this, and after a few minutes it seemed quite natural to Alice to find herself talking familiarly with them, as if she had known them all her life. Indeed, she had quite a long argument with the Lory, who at last turned sulky, and would only say, “I am older than you, and must know better”; and this Alice would not allow without knowing how old it was, and, as the Lory positively refused to tell its age, there was no more to be said.</p>
+  <h1>Chapter 3</h1>
+  <h2>Opening and Importing Books</h2>
+  <p class="lead">Adding books to your Lirune library is fast, versatile, and non-destructive.</p>
+  <h3>Supported Import Methods</h3>
+  <p>Lirune supports several intuitive ways to import your EPUB collection:</p>
+  <ul>
+    <li><strong>Single EPUB Import:</strong> Use the "Browse EPUB Files" button to select and open an individual book.</li>
+    <li><strong>Multiple EPUB Import:</strong> Select multiple files simultaneously in the Windows file picker to add an entire batch in one step.</li>
+    <li><strong>Folder Import:</strong> Choose "Open Folder" from the library menu to scan an entire directory.</li>
+    <li><strong>Recursive Folder Import:</strong> Lirune searches nested subfolders within a selected directory, discovering all valid EPUB files.</li>
+    <li><strong>Drag and Drop:</strong> Simply drag one or more <code>.epub</code> files from Windows Explorer directly into the Lirune window.</li>
+    <li><strong>Windows Explorer Integration:</strong> Once installed, Lirune registers the <code>.epub</code> file type with Windows, allowing you to double-click any EPUB on your PC to launch it in Lirune.</li>
+  </ul>
+  <h3>Resilient Package Validation</h3>
+  <p>Lirune inspects each EPUB package upon import to ensure valid structure and metadata. If a file in a batch is malformed, damaged, or unsupported, Lirune reports the issue without halting or discarding the remaining valid books in the import queue.</p>
+  <h3>DRM and Encryption</h3>
+  <p>Lirune respects copyright and digital packaging standards. Encrypted or DRM-protected files (such as Adobe ADEPT or proprietary vendor locks) cannot be opened. Lirune does not bypass digital rights management.</p>
+  <h3>Duplicate Handling</h3>
+  <p>Lirune uses cryptographic content fingerprinting to identify books. If you import an EPUB that is already in your library, Lirune recognizes it and avoids creating redundant duplicate records. At the same time, different books that share identical or similar filenames can coexist without conflict.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter4.html
+      zip.file('OEBPS/chapter4.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 4: Reading Comfortably</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 4</h1>
+  <h2>Reading Comfortably</h2>
+  <p class="lead">Reading should be an effortless visual experience. Lirune provides comprehensive controls to tailor page typography and layout to your comfort.</p>
+  <h3>Reader Customization</h3>
+  <p>Open Reading Settings (<kbd>S</kbd>) while inside any book to adjust:</p>
+  <ul>
+    <li><strong>Reader Themes:</strong> Choose between a crisp Light theme (the default for new readers), an immersive Dark/Night theme, a warm Sepia mode, a gentle Paper background, or contrast-oriented themes designed for high readability. You can also specify custom background and text colors.</li>
+    <li><strong>Font Families:</strong> Switch between refined serif typefaces, modern sans-serif options, monospaced fonts, or the original EPUB publisher styling when supported.</li>
+    <li><strong>Font Sizing:</strong> Scale text smoothly from compact print up to large, accessible sizes.</li>
+    <li><strong>Text Alignment:</strong> Choose between natural left-aligned text or clean justified formatting.</li>
+    <li><strong>Line Spacing and Margins:</strong> Adjust vertical line height and horizontal page margins to create the optimal line length for your display.</li>
+    <li><strong>Reading Flow:</strong> Switch between paginated reading (flipping pages horizontally like a physical volume) and continuous scrolled reading for smooth vertical reading.</li>
+    <li><strong>Layout Modes:</strong> Opt for a focused single-page layout or an automatic two-page spread on wide desktop monitors.</li>
+  </ul>
+  <h3>Application Accent vs. Reader Theme</h3>
+  <p>It is important to distinguish between the two color customization systems in Lirune:</p>
+  <ul>
+    <li><strong>Application Accent Color:</strong> This governs the user interface elements of the Lirune desktop window—such as buttons, tab highlights, slider tracks, and keyboard focus outlines. The default Lirune accent is <code>#EEECF8</code> (RGB 238, 236, 248). You can pick a custom accent in Settings or reset it to the default at any time.</li>
+    <li><strong>Reader Themes:</strong> These control the reading canvas itself—including the book page background, typography color, link styling, and text selection highlights.</li>
+  </ul>
+  <p>These two systems operate independently: adjusting your application accent keeps your reading page undisturbed, while changing your reading theme leaves your desktop application controls intact.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter5.html
+      zip.file('OEBPS/chapter5.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 5: Finding Your Place</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 5</h1>
+  <h2>Finding Your Place</h2>
+  <p class="lead">Navigating through long books and complex documents is seamless with Lirune's navigation tools.</p>
+  <h3>Table of Contents and Chapter Filtering</h3>
+  <p>Press <kbd>T</kbd> or click the table of contents icon to reveal the book's structural hierarchy. If a book has dozens of chapters, use the built-in search filter at the top of the TOC panel to locate a specific chapter name or section heading instantly.</p>
+  <h3>Continuous Progress Tracking</h3>
+  <p>Lirune continuously saves your exact reading location using EPUB Canonical Fragment Identifiers (CFI). When you close a book or shut down your PC, your exact spot is remembered. Reopening the title returns you precisely to where you paused.</p>
+  <h3>Navigation History and Returning</h3>
+  <p>If you jump across sections via the Table of Contents or a footnote link, Lirune tracks your navigation path, allowing you to return to your previous reading position without losing your place.</p>
+  <h3>Page Navigation Modes</h3>
+  <p>Turn pages using any method that feels natural:</p>
+  <ul>
+    <li>Keyboard arrow keys (<kbd>Left</kbd> / <kbd>Right</kbd>) or vim-style keys (<kbd>H</kbd> / <kbd>L</kbd> or <kbd>J</kbd> / <kbd>K</kbd>).</li>
+    <li>Clicking the unobtrusive left and right edge navigation zones with your mouse.</li>
+    <li>Using your mouse scroll wheel or laptop trackpad gestures.</li>
+    <li>Onscreen navigation buttons in the reader controls.</li>
+  </ul>
+  <h3>Distraction-Free Fullscreen</h3>
+  <p>Press <kbd>F</kbd> to toggle native fullscreen mode. Fullscreen hides desktop bars and window chrome, creating an uncluttered reading environment where only the words remain.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter6.html
+      zip.file('OEBPS/chapter6.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 6: Highlights, Notes and Bookmarks</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 6</h1>
+  <h2>Highlights, Notes and Bookmarks</h2>
+  <p class="lead">Engage actively with your reading material using Lirune's integrated annotation suite.</p>
+  <h3>The Text-Selection Toolbar</h3>
+  <p>Whenever you select text on a page, a floating selection toolbar appears immediately above the selected passage. From this toolbar, you can:</p>
+  <ul>
+    <li><strong>Highlight:</strong> Apply a colorful highlight with a single click.</li>
+    <li><strong>Choose Colors:</strong> Select from six curated highlight shades: <em>Yellow</em>, <em>Blue</em>, <em>Green</em>, <em>Pink</em>, <em>Purple</em>, or <em>Orange</em>.</li>
+    <li><strong>Add Notes:</strong> Attach your thoughts, comments, or summaries directly to the highlighted text.</li>
+    <li><strong>Copy:</strong> Copy the excerpt directly to the clipboard.</li>
+  </ul>
+  <h3>Bookmarks</h3>
+  <p>Press <kbd>B</kbd> or click the bookmark button in the top reader toolbar to bookmark your current location. Bookmarks act as visual placeholders for key moments or reference points in your books.</p>
+  <h3>The Annotations Drawer</h3>
+  <p>Press <kbd>N</kbd> or click the annotations button to slide open the side drawer. Here, all your highlights, notes, and bookmarks are gathered chronologically and by chapter. Clicking any entry jumps directly to that passage in the book.</p>
+  <h3>Local Storage and Markdown Export</h3>
+  <p>All annotations are stored locally in your private database. When you want to incorporate your reading notes into your knowledge base or study system, click "Export Annotations" to generate a clean, formatted Markdown file compatible with Obsidian, Notion, Logseq, or any plain text editor.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter7.html
+      zip.file('OEBPS/chapter7.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 7: Organizing Your Library</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 7</h1>
+  <h2>Organizing Your Library</h2>
+  <p class="lead">As your digital library expands, thoughtful organization tools ensure your books remain accessible and orderly.</p>
+  <h3>Favorites</h3>
+  <p>Click the heart icon on any book card or within the book details modal to mark it as a Favorite. Favorites are always easily accessible from the library filter bar, making them ideal for current projects, core reference books, or beloved novels.</p>
+  <h3>Collections</h3>
+  <p>Collections let you group titles by topic, genre, author study, research project, academic course, or reading challenge. You can create as many collections as you need from the Collections manager in the sidebar.</p>
+  <p>A book can belong to multiple collections simultaneously. Because organization is handled at the database level, adding or reordering collections never moves, renames, or alters your original EPUB files.</p>
+  <h3>Combining Search and Filters</h3>
+  <p>You can combine text searches with status filters (such as searching for an author name while viewing only "In Progress" books) to quickly locate the exact volume you want, even in a library containing hundreds of titles.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter8.html
+      zip.file('OEBPS/chapter8.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 8: Backups, Storage and Privacy</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 8</h1>
+  <h2>Backups, Storage and Privacy</h2>
+  <p class="lead">Lirune is designed with a strict local-first philosophy: you own your data, your files remain on your PC, and no cloud service is ever required.</p>
+  <h3>Local-First Architecture</h3>
+  <p>Everything you do in Lirune happens on your machine:</p>
+  <ul>
+    <li>Imported EPUB books are stored in managed local application storage on your hard drive.</li>
+    <li>Library metadata, reading progress, and exact CFI positions are saved in a local database.</li>
+    <li>Highlights, notes, bookmarks, collections, and favorites remain entirely on your device.</li>
+    <li>Your personal preferences and color schemes are saved locally.</li>
+    <li>No user account or cloud registration is required, and core reading features operate fully offline.</li>
+  </ul>
+  <h3>Metadata Backup and Restore</h3>
+  <p>Lirune includes a built-in backup and restore tool in Settings. This tool exports your library records, reading status, reading percentages, annotations, and collections into a portable backup file.</p>
+  <blockquote>
+    <p><strong>Note:</strong> The metadata backup tool backs up your library database and reading records. It does not package every full EPUB binary file into the backup archive. Always keep your original source EPUB files stored safely in your own personal documents or backup folders.</p>
+  </blockquote>
+  <h3>Library Integrity Check</h3>
+  <p>The Library Integrity Check utility verifies that the EPUB files in your managed storage match their expected fingerprints. If an underlying file has been moved or becomes inaccessible, the integrity check identifies the missing book so you can restore or re-import it cleanly.</p>
+  <h3>Removing Books vs. Deleting Source Files</h3>
+  <p>When you choose "Remove Book" from Lirune, the application deletes the book entry and reading state from your Lirune library. Removing a book from Lirune does not delete the original EPUB file from the folder where you originally kept it on your computer.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter9.html
+      zip.file('OEBPS/chapter9.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 9: Keyboard Shortcuts</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 9</h1>
+  <h2>Keyboard Shortcuts</h2>
+  <p class="lead">Lirune offers an extensive set of keyboard shortcuts for fast, hands-on-the-keyboard reading and navigation.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Shortcut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Next Page</td>
+        <td><kbd>→</kbd> / <kbd>Page Down</kbd> / <kbd>Space</kbd> / <kbd>J</kbd></td>
+      </tr>
+      <tr>
+        <td>Previous Page</td>
+        <td><kbd>←</kbd> / <kbd>Page Up</kbd> / <kbd>Shift + Space</kbd> / <kbd>K</kbd></td>
+      </tr>
+      <tr>
+        <td>Table of Contents</td>
+        <td><kbd>T</kbd></td>
+      </tr>
+      <tr>
+        <td>Reading Settings</td>
+        <td><kbd>S</kbd></td>
+      </tr>
+      <tr>
+        <td>Bookmark</td>
+        <td><kbd>B</kbd></td>
+      </tr>
+      <tr>
+        <td>Annotations &amp; Notes</td>
+        <td><kbd>N</kbd></td>
+      </tr>
+      <tr>
+        <td>Search in Book</td>
+        <td><kbd>/</kbd></td>
+      </tr>
+      <tr>
+        <td>Fullscreen</td>
+        <td><kbd>F</kbd></td>
+      </tr>
+      <tr>
+        <td>Library Search</td>
+        <td><kbd>Ctrl + K</kbd></td>
+      </tr>
+      <tr>
+        <td>Close Overlay / Back</td>
+        <td><kbd>Esc</kbd></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>These shortcuts function both in the main reader window and while focusing inside the reader page.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter10.html
+      zip.file('OEBPS/chapter10.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 10: Troubleshooting</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 10</h1>
+  <h2>Troubleshooting</h2>
+  <p class="lead">Here are quick solutions for common questions and situations you might encounter.</p>
+  <h3>Book will not import</h3>
+  <p>Ensure that the file is a standard, uncorrupted EPUB package. Files that were incompletely downloaded, saved in an incompatible archive format, or protected by commercial DRM encryption cannot be read. Lirune does not strip or bypass DRM.</p>
+  <h3>Book will not open from Explorer</h3>
+  <p>The standard Windows installer automatically configures the <code>.epub</code> file association. If another program has taken over this file type, right-click any EPUB file in Windows Explorer, select <em>Open with</em>, choose <em>Lirune Reader</em>, and check the option to always use this application.</p>
+  <h3>Need to start from source</h3>
+  <p>If you are running Lirune from its open-source repository, ensure you have Node.js 20 or higher installed. Run <code>npm ci</code> to install dependencies cleanly, followed by <code>npm start</code> to launch the desktop application.</p>
+  <h3>Need to reset the library</h3>
+  <p>If you wish to restore Lirune to a fresh state, you can reset application data from the Settings screen. Please be aware: resetting application data permanently clears your local book library, annotations, bookmarks, reading progress, and custom preferences. Be sure to export your annotations and metadata backups first if you wish to preserve them.</p>
+</body>
+</html>`);
+
+      // OEBPS/chapter11.html
+      zip.file('OEBPS/chapter11.html', `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Chapter 11: Support Lirune Reader</title>
+  <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+  <h1>Chapter 11</h1>
+  <h2>Support Lirune Reader</h2>
+  <div class="support-card">
+    <p class="lead">Thanks for giving Lirune Reader a place on your desktop.</p>
+    <p>Lirune is free and open-source software. If you find it useful and would like to support continued development, you can optionally buy the developer a coffee.</p>
+    <p>Support Lirune Reader on Buy Me a Coffee:</p>
+    <p><a href="https://buymeacoffee.com/vasanthgajavelly" target="_blank" rel="noopener noreferrer">https://buymeacoffee.com/vasanthgajavelly</a></p>
+    <p style="font-size: 0.9em; opacity: 0.85; margin-top: 1.5em;">Support is completely optional and does not unlock features or change how the application works.</p>
+  </div>
 </body>
 </html>`);
 
@@ -1087,13 +1442,13 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
       const arrayBuffer = await epubBlob.arrayBuffer();
 
       // Sample book cover (SVG rendered to canvas data URL)
-      const coverDataUrl = generateAliceCoverDataUrl();
+      const coverDataUrl = generateWelcomeCoverDataUrl();
 
       const sampleBook = {
-        id: 'sample_alice_' + Date.now(),
-        title: "Alice's Adventures in Wonderland",
-        author: 'Lewis Carroll',
-        description: 'The timeless masterpiece of Alice falling down a rabbit hole into a world of unbridled imagination and absurdity.',
+        id: 'sample_welcome_' + Date.now(),
+        title: 'Welcome to Lirune',
+        author: 'Lirune Reader',
+        description: "A short built-in guide to help you explore Lirune Reader's library, reading tools, customization, annotations, keyboard shortcuts, and local-first features.",
         coverDataUrl,
         ...(window.noveraDesktop ? {} : { fileData: arrayBuffer }),
         schemaVersion: 2,
@@ -1102,12 +1457,12 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
         lastReadDate: 0,
         currentCfi: null,
         progressPercent: 0,
-        currentChapter: 'Chapter I: Down the Rabbit-Hole'
+        currentChapter: '1. Welcome to Lirune'
       };
 
       if (window.noveraDesktop?.saveBookToStorage) {
         const storageId = `${await getFingerprint(arrayBuffer, arrayBuffer.byteLength, 'sample')}.epub`;
-        const result = await window.noveraDesktop.saveBookToStorage('alice-in-wonderland.epub', arrayBuffer, storageId);
+        const result = await window.noveraDesktop.saveBookToStorage('welcome-to-lirune.epub', arrayBuffer, storageId);
         if (!result?.success) throw new Error(result?.error || 'Could not save sample book');
         sampleBook.storageId = result.storageId;
       }
@@ -1122,55 +1477,128 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
     }
   }
 
-  function generateAliceCoverDataUrl() {
+  function generateWelcomeCoverDataUrl() {
     const canvas = document.createElement('canvas');
     canvas.width = 400;
     canvas.height = 600;
     const ctx = canvas.getContext('2d');
 
-    // Rich gradient background
+    // Dark charcoal / deep cool background
     const grad = ctx.createLinearGradient(0, 0, 400, 600);
-    grad.addColorStop(0, '#2E1065');
-    grad.addColorStop(0.5, '#4C1D95');
-    grad.addColorStop(1, '#0F172A');
+    grad.addColorStop(0, '#151621');
+    grad.addColorStop(0.4, '#1C1E2B');
+    grad.addColorStop(1, '#0E0F16');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 400, 600);
 
-    // Decorative vintage border
-    ctx.strokeStyle = '#C4B5FD';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(24, 24, 352, 552);
+    // Subtle soft glass surface card
+    ctx.fillStyle = 'rgba(238, 236, 248, 0.035)';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(24, 24, 352, 552, 12);
+    } else {
+      ctx.rect(24, 24, 352, 552);
+    }
+    ctx.fill();
 
-    ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
+    // Subtle borders
+    ctx.strokeStyle = 'rgba(238, 236, 248, 0.18)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(238, 236, 248, 0.08)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(30, 30, 340, 540);
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(32, 32, 336, 536, 8);
+    } else {
+      ctx.rect(32, 32, 336, 536);
+    }
+    ctx.stroke();
+
+    // Subtle ambient accent glow behind symbol
+    const glow = ctx.createRadialGradient(200, 210, 10, 200, 210, 120);
+    glow.addColorStop(0, 'rgba(238, 236, 248, 0.12)');
+    glow.addColorStop(1, 'rgba(238, 236, 248, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(200, 210, 120, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Minimalist open book symbol
+    ctx.save();
+    ctx.strokeStyle = '#EEECF8';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Left page
+    ctx.beginPath();
+    ctx.moveTo(196, 222);
+    ctx.quadraticCurveTo(170, 212, 148, 215);
+    ctx.lineTo(148, 245);
+    ctx.quadraticCurveTo(170, 242, 196, 252);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Right page
+    ctx.beginPath();
+    ctx.moveTo(204, 222);
+    ctx.quadraticCurveTo(230, 212, 252, 215);
+    ctx.lineTo(252, 245);
+    ctx.quadraticCurveTo(230, 242, 204, 252);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Spine mark
+    ctx.beginPath();
+    ctx.moveTo(200, 224);
+    ctx.lineTo(200, 252);
+    ctx.stroke();
+    ctx.restore();
+
+    // Category / Tag
+    ctx.fillStyle = 'rgba(238, 236, 248, 0.7)';
+    ctx.font = '600 11px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('BUILT-IN GUIDE', 200, 120);
 
     // Title
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 30px "Playfair Display", Georgia, serif';
+    ctx.font = 'bold 32px "Playfair Display", Georgia, serif';
     ctx.textAlign = 'center';
-    ctx.fillText("ALICE'S", 200, 160);
-    ctx.fillText("ADVENTURES", 200, 205);
-    ctx.font = 'italic 20px "Playfair Display", Georgia, serif';
-    ctx.fillText("in", 200, 245);
-    ctx.font = 'bold 28px "Playfair Display", Georgia, serif';
-    ctx.fillText("WONDERLAND", 200, 290);
+    ctx.letterSpacing = '1px';
+    ctx.fillText('WELCOME TO', 200, 315);
+    ctx.font = 'bold 36px "Playfair Display", Georgia, serif';
+    ctx.fillStyle = '#EEECF8';
+    ctx.fillText('LIRUNE', 200, 360);
 
-    // Ornament
-    ctx.fillStyle = '#A78BFA';
-    ctx.font = '24px serif';
-    ctx.fillText("❦ ❦ ❦", 200, 345);
+    // Divider line
+    ctx.strokeStyle = 'rgba(238, 236, 248, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(160, 390);
+    ctx.lineTo(240, 390);
+    ctx.stroke();
+
+    // Subtitle
+    ctx.fillStyle = 'rgba(238, 236, 248, 0.85)';
+    ctx.font = 'italic 15px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('A quick guide to your reading space', 200, 420);
 
     // Author
-    ctx.fillStyle = '#DDD6FE';
-    ctx.font = '500 18px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(238, 236, 248, 0.75)';
+    ctx.font = '500 13px Inter, system-ui, sans-serif';
     ctx.letterSpacing = '2px';
-    ctx.fillText("LEWIS CARROLL", 200, 430);
+    ctx.fillText('LIRUNE READER', 200, 500);
 
-    // Edition
-    ctx.fillStyle = 'rgba(221, 214, 254, 0.6)';
-    ctx.font = '12px Inter, sans-serif';
-    ctx.fillText("LIRUNE CLASSIC EDITION", 200, 520);
+    // Version / tag
+    ctx.fillStyle = 'rgba(238, 236, 248, 0.4)';
+    ctx.font = '11px Inter, system-ui, sans-serif';
+    ctx.letterSpacing = '1px';
+    ctx.fillText('LOCAL-FIRST READING', 200, 526);
 
     return canvas.toDataURL('image/jpeg', 0.9);
   }

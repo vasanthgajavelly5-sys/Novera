@@ -32,5 +32,67 @@ def create_icon():
     img.save(ico_path, format='ICO', sizes=sizes)
     print(f"Saved multi-resolution ICO to {ico_path}")
 
+def create_store_logos():
+    """Create Microsoft Store required logos: 1080x1080 and 2160x2160"""
+    os.makedirs('assets', exist_ok=True)
+    
+    for target_size in [1080, 2160]:
+        img = Image.new('RGBA', (target_size, target_size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        
+        scale = target_size / 512
+        margin = int(52 * scale)
+        radius = int(104 * scale)
+        
+        # Outer rounded rectangle
+        draw.rounded_rectangle([margin, margin, target_size - margin, target_size - margin], radius=radius,
+                               fill=(27, 25, 38, 255), outline=(238, 236, 248, 110), width=int(5 * scale))
+        
+        # Inner book shape
+        inner_margin_left = int(122 * scale)
+        inner_margin_top = int(96 * scale)
+        inner_right = int(390 * scale)
+        inner_bottom = int(394 * scale)
+        inner_radius = int(32 * scale)
+        draw.rounded_rectangle([inner_margin_left, inner_margin_top, inner_right, inner_bottom], radius=inner_radius,
+                               fill=(47, 44, 62, 255), outline=(238, 236, 248, 180), width=int(6 * scale))
+        
+        # Book pages
+        page_points = [
+            (int(104 * scale), int(116 * scale)),
+            (int(294 * scale), int(116 * scale)),
+            (int(294 * scale), int(372 * scale)),
+            (int(199 * scale), int(326 * scale)),
+            (int(104 * scale), int(372 * scale))
+        ]
+        draw.polygon(page_points,
+                     fill=(35, 32, 49, 255), outline=(238, 236, 248, 220))
+        
+        # Highlight page
+        highlight_points = [
+            (int(244 * scale), int(116 * scale)),
+            (int(294 * scale), int(116 * scale)),
+            (int(294 * scale), int(372 * scale)),
+            (int(269 * scale), int(359 * scale)),
+            (int(244 * scale), int(372 * scale))
+        ]
+        draw.polygon(highlight_points,
+                     fill=(238, 236, 248, 255))
+        
+        # Text lines
+        line1 = [(int(148 * scale), int(170 * scale)), (int(246 * scale), int(170 * scale))]
+        line2 = [(int(148 * scale), int(210 * scale)), (int(246 * scale), int(210 * scale))]
+        line3 = [(int(148 * scale), int(250 * scale)), (int(220 * scale), int(250 * scale))]
+        draw.line(line1, fill=(238, 236, 248, 230), width=int(8 * scale))
+        draw.line(line2, fill=(213, 210, 228, 210), width=int(7 * scale))
+        draw.line(line3, fill=(188, 184, 206, 190), width=int(7 * scale))
+        
+        # Save store logo
+        filename = f'StoreLogo_{target_size}x{target_size}.png'
+        filepath = os.path.join('assets', filename)
+        img.save(filepath, 'PNG')
+        print(f"Saved Store logo to {filepath}")
+
 if __name__ == '__main__':
     create_icon()
+    create_store_logos()
