@@ -1,5 +1,5 @@
 /**
- * Novera — Main Application Coordinator
+ * Lirune Reader — Main Application Coordinator
  * Boots app, manages view transitions, drawer panels, modals, and hotkeys.
  */
 
@@ -33,7 +33,7 @@ const App = (() => {
     bindFullscreenState();
     bindWindowControls();
 
-    console.log('Novera EPUB Reader successfully initialized');
+    console.log('Lirune Reader successfully initialized');
   }
 
   // View Switching

@@ -1,5 +1,5 @@
 /**
- * Novera — Separate application and reader theme management.
+ * Lirune Reader — Separate application and reader theme management.
  */
 
 const ThemeManager = (() => {
@@ -7,8 +7,10 @@ const ThemeManager = (() => {
   const READER_THEMES = ['neutral', 'sepia', 'night', 'paper', 'contrast1', 'contrast2', 'contrast3', 'contrast4', 'custom'];
   const LEGACY_READER_THEMES = { dark: 'night', light: 'neutral', oled: 'night', sepia: 'sepia' };
   let currentAppTheme = 'dark';
-  let currentReaderTheme = 'night';
+  let currentReaderTheme = 'neutral';
   let customColors = null;
+  let persistTimer = null;
+  const DEFAULT_ACCENT = '#EEECF8';
 
   const THEME_COLORS = {
     neutral: {
@@ -57,6 +59,11 @@ const ThemeManager = (() => {
 
   const DEFAULT_CUSTOM_COLORS = { bg: '#FDFCF8', text: '#1A1410', muted: '#6B6055', link: '#245A8D', selection: '#8DB7D9' };
 
+  function persist(key, value) {
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => NoveraDB.setPref(key, value), 250);
+  }
+
   function normalizeHex(value, fallback) {
     return /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : fallback;
   }
@@ -81,8 +88,9 @@ const ThemeManager = (() => {
     const legacyTheme = await NoveraDB.getPref('theme', 'dark');
     const savedAppTheme = await NoveraDB.getPref('appTheme', APP_THEMES.includes(legacyTheme) ? legacyTheme : 'dark');
     customColors = normalizeCustomColors(await NoveraDB.getPref('customReaderTheme', DEFAULT_CUSTOM_COLORS));
-    const savedReaderTheme = await NoveraDB.getPref('readerTheme', LEGACY_READER_THEMES[legacyTheme] || 'night');
-    const migratedReaderTheme = LEGACY_READER_THEMES[savedReaderTheme] || (READER_THEMES.includes(savedReaderTheme) ? savedReaderTheme : 'night');
+    const savedReaderTheme = await NoveraDB.getPref('readerTheme', 'neutral');
+    applyAccent(await NoveraDB.getPref('accentColor', DEFAULT_ACCENT), false);
+    const migratedReaderTheme = LEGACY_READER_THEMES[savedReaderTheme] || (READER_THEMES.includes(savedReaderTheme) ? savedReaderTheme : 'neutral');
     setAppTheme(savedAppTheme, false);
     setReaderTheme(migratedReaderTheme, savedReaderTheme !== migratedReaderTheme);
     updateCustomUI();
@@ -115,6 +123,39 @@ const ThemeManager = (() => {
     window.dispatchEvent(new CustomEvent('novera:appthemechange', { detail: { theme: themeName } }));
   }
 
+  function normalizeAccent(value) {
+    return /^#[0-9a-f]{6}$/i.test(value || '') ? value.toUpperCase() : DEFAULT_ACCENT;
+  }
+
+  function accentRgb(hex) {
+    const value = normalizeAccent(hex).slice(1);
+    return [parseInt(value.slice(0, 2), 16), parseInt(value.slice(2, 4), 16), parseInt(value.slice(4, 6), 16)];
+  }
+
+  function applyAccent(value, persist = true) {
+    const accent = normalizeAccent(value);
+    const [red, green, blue] = accentRgb(accent);
+    const luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
+    const foreground = luminance > 0.62 ? '#11151B' : '#FFFFFF';
+    const hover = `rgb(${Math.min(255, red + 18)},${Math.min(255, green + 18)},${Math.min(255, blue + 18)})`;
+    const active = `rgb(${Math.max(0, red - 24)},${Math.max(0, green - 24)},${Math.max(0, blue - 24)})`;
+    const root = document.documentElement;
+    root.style.setProperty('--accent', accent);
+    root.style.setProperty('--accent-hover', hover);
+    root.style.setProperty('--accent-active', active);
+    root.style.setProperty('--accent-text', luminance > 0.62 ? foreground : accent);
+    root.style.setProperty('--text-on-accent', foreground);
+    root.style.setProperty('--gradient-accent', `linear-gradient(135deg, ${accent}, ${active})`);
+    root.style.setProperty('--border-accent', `rgba(${red},${green},${blue},0.48)`);
+    root.style.setProperty('--accent-subtle', `rgba(${red},${green},${blue},0.13)`);
+    root.style.setProperty('--accent-subtle-h', `rgba(${red},${green},${blue},0.22)`);
+    root.style.setProperty('--accent-glow', `rgba(${red},${green},${blue},0.18)`);
+    root.style.setProperty('--accent-glow-strong', `rgba(${red},${green},${blue},0.3)`);
+    const input = document.getElementById('app-accent-color');
+    if (input) input.value = accent;
+    if (persist) persist('accentColor', accent);
+  }
+
   function setReaderTheme(themeName, persist = true) {
     if (!READER_THEMES.includes(themeName)) themeName = 'night';
     currentReaderTheme = themeName;
@@ -139,7 +180,7 @@ const ThemeManager = (() => {
       preset.setAttribute('aria-pressed', preset.dataset.theme === themeName ? 'true' : 'false');
     });
     updateCustomUI();
-    if (persist) NoveraDB.setPref('readerTheme', themeName);
+    if (persist) persist('readerTheme', themeName);
 
     // Apply directly into EPUB iframe page content
     if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
@@ -172,14 +213,14 @@ const ThemeManager = (() => {
   function setCustomColor(key, value) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_CUSTOM_COLORS, key)) return;
     customColors = normalizeCustomColors({ ...customColors, [key]: value });
-    NoveraDB.setPref('customReaderTheme', customColors);
+    persist('customReaderTheme', customColors);
     updateCustomUI();
     if (currentReaderTheme === 'custom') setReaderTheme('custom');
   }
 
   function resetCustomTheme() {
     customColors = { ...DEFAULT_CUSTOM_COLORS };
-    NoveraDB.setPref('customReaderTheme', customColors);
+    persist('customReaderTheme', customColors);
     updateCustomUI();
     setReaderTheme('custom');
   }
@@ -201,12 +242,18 @@ const ThemeManager = (() => {
         resetCustomTheme();
         return;
       }
+      const resetAccent = e.target.closest('#reset-accent-btn');
+      if (resetAccent) {
+        applyAccent(DEFAULT_ACCENT);
+        return;
+      }
       const appPreset = e.target.closest('[data-app-theme]');
       if (appPreset && appPreset.dataset.appTheme) setAppTheme(appPreset.dataset.appTheme);
     });
     document.addEventListener('input', (e) => {
       const input = e.target.closest('[data-custom-color]');
       if (input) setCustomColor(input.dataset.customColor, input.value);
+      if (e.target.id === 'app-accent-color') applyAccent(e.target.value);
     });
   }
 
@@ -227,5 +274,6 @@ const ThemeManager = (() => {
     getThemeColors,
     APP_THEMES,
     READER_THEMES
+    ,DEFAULT_ACCENT
   };
 })();

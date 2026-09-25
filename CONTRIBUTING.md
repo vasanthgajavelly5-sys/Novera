@@ -1,6 +1,6 @@
-# Contributing to Novera
+# Contributing to Lirune Reader
 
-Thank you for helping improve Novera, a private, open-source Windows EPUB reader.
+Thank you for helping improve Lirune Reader, a private, open-source Windows EPUB reader.
 
 ## Development Setup
 

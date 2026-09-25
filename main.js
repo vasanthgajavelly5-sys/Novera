@@ -1,11 +1,16 @@
 const { app, BrowserWindow, dialog, shell, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 const JSZip = require('jszip');
+const crypto = require('crypto');
+const { fingerprintBuffer, storageIdForFingerprint, isStorageId } = require('./scripts/storage-contract');
 
 let mainWindow = null;
 let pendingOpenFile = null;
 const pendingEpubReadPaths = new Set();
+const EXPECTED_SHELL_PATH = path.resolve(__dirname, 'index.html');
+const EXPECTED_SHELL_URL = pathToFileURL(EXPECTED_SHELL_PATH).toString();
 
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -65,6 +70,47 @@ function getBooksStorageDir() {
   return booksDir;
 }
 
+function getStoragePath(storageId) {
+  if (!isStorageId(storageId)) {
+    throw new Error('Invalid managed book identity');
+  }
+  return path.join(getBooksStorageDir(), storageId);
+}
+
+function isTrustedSender(event) {
+  const frame = event?.senderFrame;
+  if (!frame || !frame.url.startsWith('file://')) return false;
+  try {
+    let senderPath = decodeURIComponent(new URL(frame.url).pathname);
+    senderPath = senderPath.replace(/^\/([A-Za-z]:)/, '$1');
+    return path.resolve(senderPath) === EXPECTED_SHELL_PATH;
+  } catch {
+    return false;
+  }
+}
+
+function requireTrustedSender(event) {
+  if (!isTrustedSender(event)) throw new Error('Untrusted IPC sender');
+}
+
+function writeManagedBook(storageId, buffer) {
+  const destination = getStoragePath(storageId);
+  if (fs.existsSync(destination)) {
+    const existing = fs.readFileSync(destination);
+    if (fingerprintBuffer(existing) === fingerprintBuffer(buffer)) return destination;
+    throw new Error('Managed storage identity already belongs to different content');
+  }
+  const temporary = `${destination}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(temporary, buffer, { flag: 'wx' });
+  try {
+    fs.renameSync(temporary, destination);
+  } catch (error) {
+    if (fs.existsSync(destination)) fs.unlinkSync(temporary);
+    else throw error;
+  }
+  return destination;
+}
+
 // Window state storage
 function getWindowStatePath() {
   return path.join(app.getPath('userData'), 'window-state.json');
@@ -76,7 +122,9 @@ function loadWindowState() {
     if (fs.existsSync(file)) {
       return JSON.parse(fs.readFileSync(file, 'utf-8'));
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Could not load window state:', e.message);
+  }
   return { width: 1280, height: 850, isMaximized: false };
 }
 
@@ -93,7 +141,9 @@ function saveWindowState(win) {
       isMaximized
     };
     fs.writeFileSync(getWindowStatePath(), JSON.stringify(state));
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Could not save window state:', e.message);
+  }
 }
 
 function createWindow() {
@@ -112,7 +162,7 @@ function createWindow() {
     backgroundColor: '#0C0C12',
     icon: iconPath,
     show: false,
-    title: 'Novera — A beautiful home for your books',
+    title: 'Lirune Reader — A calm home for your books',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -159,6 +209,15 @@ function createWindow() {
   });
 
   // External web links open in user's default browser
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('http:') || url.startsWith('https:')) {
+      event.preventDefault();
+      shell.openExternal(url);
+      return;
+    }
+    if (url !== EXPECTED_SHELL_URL) event.preventDefault();
+  });
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http:') || url.startsWith('https:')) {
       shell.openExternal(url);
@@ -172,12 +231,13 @@ function createWindow() {
 // -------------------------------------------------------------
 
 // Native Windows File Dialog
-ipcMain.handle('dialog:open-files', async () => {
+ipcMain.handle('dialog:open-files', async (event) => {
+  requireTrustedSender(event);
   if (!mainWindow) return { canceled: true, files: [] };
 
   const result = await dialog.showOpenDialog(mainWindow, {
     title: 'Select one EPUB book',
-    buttonLabel: 'Import to Novera',
+    buttonLabel: 'Import to Lirune Reader',
     filters: [
       { name: 'EPUB eBooks (*.epub)', extensions: ['epub'] },
       { name: 'All Files (*.*)', extensions: ['*'] }
@@ -212,7 +272,8 @@ ipcMain.handle('dialog:open-files', async () => {
 });
 
 // Native Windows Folder Dialog (batch import)
-ipcMain.handle('dialog:open-folder', async () => {
+ipcMain.handle('dialog:open-folder', async (event) => {
+  requireTrustedSender(event);
   if (!mainWindow) return { canceled: true, files: [] };
 
   const result = await dialog.showOpenDialog(mainWindow, {
@@ -277,28 +338,35 @@ async function validateEpubBuffer(buffer) {
 }
 
 // Reveal in Windows File Explorer
-ipcMain.handle('shell:show-in-folder', (_event, targetPath) => {
-  if (isManagedBookPath(targetPath) && fs.existsSync(targetPath)) {
-    shell.showItemInFolder(targetPath);
+ipcMain.handle('shell:show-in-folder', (event, targetPath) => {
+  requireTrustedSender(event);
+  let managedPath = targetPath;
+  try {
+    managedPath = getStoragePath(targetPath);
+  } catch {
+    if (!isManagedBookPath(targetPath)) return false;
+  }
+  if (fs.existsSync(managedPath)) {
+    shell.showItemInFolder(managedPath);
     return true;
   }
   return false;
 });
 
 // Save copy of book in AppData storage
-ipcMain.handle('fs:save-book', async (_event, { fileName, buffer }) => {
+ipcMain.handle('fs:save-book', async (event, { fileName, storageId, buffer }) => {
+  requireTrustedSender(event);
   try {
     if (typeof fileName !== 'string' || !fileName.toLowerCase().endsWith('.epub')) {
       throw new Error('Only EPUB files can be stored');
     }
     const bookBuffer = Buffer.from(buffer);
     await validateEpubBuffer(bookBuffer);
-    const storageDir = getBooksStorageDir();
-    // Sanitize filename
-    const safeName = path.basename(fileName).replace(/[/\\?%*:|"<>]/g, '_');
-    const destPath = path.join(storageDir, safeName);
-    fs.writeFileSync(destPath, bookBuffer);
-    return { success: true, path: destPath };
+    const fingerprint = fingerprintBuffer(bookBuffer);
+    const safeStorageId = storageId || storageIdForFingerprint(fingerprint);
+    if (safeStorageId !== storageIdForFingerprint(fingerprint)) throw new Error('Storage identity does not match EPUB content');
+    const destPath = writeManagedBook(safeStorageId, bookBuffer);
+    return { success: true, storageId: safeStorageId, fingerprint, fileSize: bookBuffer.length, originalName: path.basename(fileName) };
   } catch (e) {
     console.error('Failed to persist book to disk:', e);
     return { success: false, error: e.message };
@@ -306,10 +374,12 @@ ipcMain.handle('fs:save-book', async (_event, { fileName, buffer }) => {
 });
 
 // Delete book from disk
-ipcMain.handle('fs:delete-book', (_event, filePath) => {
+ipcMain.handle('fs:delete-book', (event, storageId) => {
+  requireTrustedSender(event);
   try {
-    if (isManagedBookPath(filePath) && fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    const managedPath = getStoragePath(storageId);
+    if (fs.existsSync(managedPath)) {
+      fs.unlinkSync(managedPath);
       return true;
     }
   } catch (e) {
@@ -318,10 +388,17 @@ ipcMain.handle('fs:delete-book', (_event, filePath) => {
   return false;
 });
 
-ipcMain.handle('fs:get-storage-path', () => getBooksStorageDir());
-ipcMain.handle('app:get-version', () => app.getVersion());
+ipcMain.handle('fs:get-storage-path', (event) => {
+  requireTrustedSender(event);
+  return getBooksStorageDir();
+});
+ipcMain.handle('app:get-version', (event) => {
+  requireTrustedSender(event);
+  return app.getVersion();
+});
 
-ipcMain.handle('fs:read-epub', (_event, filePath) => {
+ipcMain.handle('fs:read-epub', (event, filePath) => {
+  requireTrustedSender(event);
   if (typeof filePath !== 'string' || !filePath.toLowerCase().endsWith('.epub')) {
     throw new Error('Only EPUB files can be opened');
   }
@@ -343,18 +420,43 @@ ipcMain.handle('fs:read-epub', (_event, filePath) => {
   };
 });
 
-ipcMain.handle('window:toggle-fullscreen', () => {
+ipcMain.handle('fs:read-managed-book', (event, { storageId, fingerprint, fileSize } = {}) => {
+  requireTrustedSender(event);
+  const managedPath = getStoragePath(storageId);
+  if (!fs.existsSync(managedPath)) throw new Error('Managed EPUB file is unavailable');
+  const buffer = fs.readFileSync(managedPath);
+  if (fileSize !== undefined && buffer.length !== Number(fileSize)) throw new Error('Managed EPUB file is corrupted');
+  if (fingerprint && fingerprintBuffer(buffer) !== fingerprint.toLowerCase()) throw new Error('Managed EPUB file is corrupted');
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+});
+
+ipcMain.handle('fs:list-managed-books', (event) => {
+  requireTrustedSender(event);
+  return fs.readdirSync(getBooksStorageDir(), { withFileTypes: true })
+    .filter(entry => entry.isFile() && isStorageId(entry.name))
+    .map(entry => entry.name);
+});
+
+ipcMain.handle('window:toggle-fullscreen', (event) => {
+  requireTrustedSender(event);
   if (!mainWindow) return false;
   const next = !mainWindow.isFullScreen();
   mainWindow.setFullScreen(next);
   return next;
 });
 
-ipcMain.handle('window:is-fullscreen', () => Boolean(mainWindow?.isFullScreen()));
+ipcMain.handle('window:is-fullscreen', (event) => {
+  requireTrustedSender(event);
+  return Boolean(mainWindow?.isFullScreen());
+});
 
 // Window controls
-ipcMain.on('window:minimize', () => mainWindow?.minimize());
-ipcMain.on('window:maximize', () => {
+ipcMain.on('window:minimize', (event) => {
+  requireTrustedSender(event);
+  mainWindow?.minimize();
+});
+ipcMain.on('window:maximize', (event) => {
+  requireTrustedSender(event);
   if (!mainWindow) return;
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
@@ -362,7 +464,10 @@ ipcMain.on('window:maximize', () => {
     mainWindow.maximize();
   }
 });
-ipcMain.on('window:close', () => mainWindow?.close());
+ipcMain.on('window:close', (event) => {
+  requireTrustedSender(event);
+  mainWindow?.close();
+});
 
 // Application Lifecycle
 app.whenReady().then(() => {

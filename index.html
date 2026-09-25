@@ -3,13 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Novera — A beautiful home for your books.">
-  <title>Novera — A beautiful home for your books</title>
-
-  <!-- Google Fonts: Editorial Serif, Refined Display, Modern Sans, Clean Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="description" content="Lirune Reader — A calm, private home for your books.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none';">
+  <title>Lirune Reader — A calm home for your books</title>
 
   <!-- Application Stylesheets -->
   <link rel="stylesheet" href="css/tokens.css">
@@ -48,7 +44,7 @@
               <defs><linearGradient id="brand-bookmark" x1="5" y1="3" x2="19" y2="21" gradientUnits="userSpaceOnUse"><stop stop-color="#27365F"/><stop offset="1" stop-color="#7140D0"/></linearGradient></defs>
             </svg>
           </div>
-          <span class="logo-wordmark">Novera</span>
+          <span class="logo-wordmark">Lirune</span>
           <span class="logo-tagline">A beautiful home for your books</span>
         </div>
       </div>
@@ -126,6 +122,17 @@
           <span class="lib-count" id="book-count">0 books</span>
         </div>
         <div class="lib-controls">
+          <select id="filter-select" class="glass-select" aria-label="Filter books">
+            <option value="all">All books</option>
+            <option value="unread">Unread</option>
+            <option value="progress">In progress</option>
+            <option value="finished">Finished</option>
+            <option value="favorites">Favorites</option>
+          </select>
+          <select id="collection-select" class="glass-select" aria-label="Filter by collection">
+            <option value="all">All collections</option>
+          </select>
+          <button class="btn btn-glass btn-sm" id="new-collection-btn" type="button">New collection</button>
           <select id="sort-select" class="glass-select" aria-label="Sort books by">
             <option value="recent">Recently Read</option>
             <option value="added">Recently Added</option>
@@ -431,6 +438,15 @@
         </div>
       </section>
 
+      <section class="settings-group" aria-labelledby="app-accent-title">
+          <div class="settings-section-heading">
+            <div class="setting-section-title" id="app-accent-title">Application accent</div>
+            <p>Choose the color used for controls and focus states.</p>
+          </div>
+          <label class="color-control">Accent color<input type="color" id="app-accent-color" aria-label="Application accent color" value="#EEECF8"></label>
+          <button class="btn btn-ghost reset-settings-btn" id="reset-accent-btn" type="button">Reset to Lirune default</button>
+        </section>
+
       <section class="settings-group" aria-labelledby="reading-theme-title">
         <div class="settings-section-heading">
           <div class="setting-section-title" id="reading-theme-title">Reading theme</div>
@@ -459,7 +475,7 @@
           <button class="btn btn-ghost reset-settings-btn" id="reset-custom-theme-btn" type="button">Reset custom theme</button>
           </div>
         </details>
-      </section>
+        </section>
 
       <section class="settings-group" aria-labelledby="layout-title">
         <div class="settings-section-heading">
@@ -508,10 +524,15 @@
       </section>
 
       <button class="btn btn-ghost reset-settings-btn" id="reset-reader-settings-btn" type="button">Reset reading preferences</button>
+      <button class="btn btn-ghost reset-settings-btn" id="integrity-check-btn" type="button">Check library integrity</button>
+      <button class="btn btn-ghost reset-settings-btn" id="export-annotations-btn" type="button">Export annotations</button>
+      <button class="btn btn-ghost reset-settings-btn" id="backup-library-btn" type="button">Back up library metadata</button>
+      <label class="btn btn-ghost reset-settings-btn" for="restore-library-input">Restore metadata backup</label>
+      <input id="restore-library-input" type="file" accept="application/json,.json" hidden>
 
       <section class="settings-group support-group" style="margin-top:var(--sp-6); padding:var(--sp-4); border-radius:var(--radius-lg); background:rgba(255, 255, 255, 0.03); border:1px solid var(--border-subtle);">
-        <div class="setting-section-title" style="margin-bottom:var(--sp-2);">Support Novera</div>
-        <p style="font-size:var(--text-xs); color:var(--text-secondary); margin-bottom:var(--sp-3); line-height:1.5;">Novera is a free and open-source desktop reader. If you enjoy reading here, support future features and development by buying a coffee!</p>
+        <div class="setting-section-title" style="margin-bottom:var(--sp-2);">Support Lirune Reader</div>
+        <p style="font-size:var(--text-xs); color:var(--text-secondary); margin-bottom:var(--sp-3); line-height:1.5;">Lirune Reader is a free and open-source desktop reader. If you enjoy reading here, support future features and development by buying a coffee!</p>
         <a href="https://buymeacoffee.com/vasanthgajavelly" target="_blank" rel="noopener noreferrer" class="btn btn-glow" style="display:inline-flex; width:100%; justify-content:center; text-decoration:none; gap:8px;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
           <span>Buy Me a Coffee</span>
@@ -519,16 +540,16 @@
       </section>
 
       <section class="settings-group about-card" aria-labelledby="about-title">
-        <img src="assets/icon.png" alt="Novera icon" class="about-icon">
+        <img src="assets/icon.png" alt="Lirune Reader icon" class="about-icon">
         <div>
-          <div class="setting-section-title" id="about-title">Novera</div>
+          <div class="setting-section-title" id="about-title">Lirune Reader</div>
           <p class="about-tagline">A beautiful home for your books.</p>
         </div>
-        <p class="about-copy">Created by <strong>Vasanth Gajavelly</strong><br>Novera is a free, open-source EPUB reader designed to make digital reading beautiful, comfortable, and distraction-free.</p>
+        <p class="about-copy">Created by <strong>Vasanth Gajavelly</strong><br>Lirune Reader is a free, open-source EPUB reader designed to make digital reading beautiful, comfortable, and distraction-free.</p>
         <div class="about-meta">Version <span id="about-version">…</span> · Licensed under GNU GPL v3.0</div>
         <div class="about-actions">
-          <a href="https://github.com/vasanthgajavelly5-sys/Novera" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" aria-label="Open Novera on GitHub">Open Source</a>
-          <a href="https://buymeacoffee.com/vasanthgajavelly" target="_blank" rel="noopener noreferrer" class="btn btn-glow" aria-label="Support Novera on Buy Me a Coffee">☕ Buy Me a Coffee</a>
+          <a href="https://github.com/vasanthgajavelly5-sys/Novera" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" aria-label="Open Lirune Reader on GitHub">Open Source</a>
+          <a href="https://buymeacoffee.com/vasanthgajavelly" target="_blank" rel="noopener noreferrer" class="btn btn-glow" aria-label="Support Lirune Reader on Buy Me a Coffee">☕ Buy Me a Coffee</a>
         </div>
       </section>
 
@@ -560,7 +581,7 @@
     <div class="modal-box import-modal-box">
       <div class="modal-header">
         <div>
-          <h2 id="import-title">Add to Novera</h2>
+          <h2 id="import-title">Add to Lirune Reader</h2>
           <p class="modal-subtitle">Choose one EPUB or a folder to scan.</p>
         </div>
         <button class="btn btn-glass icon-btn" id="close-import-btn" aria-label="Close import chooser">
@@ -657,7 +678,7 @@
       <div class="modal-header">
         <div>
           <h2 id="delete-book-title">Remove book?</h2>
-          <p class="modal-subtitle">This removes Novera's local copy, reading progress, highlights, notes, and bookmarks.</p>
+          <p class="modal-subtitle">This removes Lirune Reader's local copy, reading progress, highlights, notes, and bookmarks.</p>
         </div>
       </div>
       <p id="delete-book-message" class="delete-book-message">Your original EPUB file will not be deleted.</p>
@@ -735,6 +756,9 @@
     <div class="ctx-item" id="ctx-reveal" role="menuitem">
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       <span>Reveal in Explorer</span>
+    </div>
+    <div class="ctx-item" id="ctx-collection" role="menuitem">
+      <span>Add to collection</span>
     </div>
     <div class="ctx-sep" role="separator"></div>
     <div class="ctx-item danger" id="ctx-delete" role="menuitem">

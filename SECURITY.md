@@ -24,6 +24,6 @@ You should receive an acknowledgement as soon as practical. Please allow maintai
 
 ## Security Scope
 
-Novera is a local Electron application. Reports involving EPUB parsing, unsafe renderer behavior, unrestricted IPC, filesystem access, imported file handling, dependency vulnerabilities, or packaged-app execution are especially important.
+Lirune Reader is a local Electron application. Reports involving EPUB parsing, unsafe renderer behavior, unrestricted IPC, filesystem access, imported file handling, dependency vulnerabilities, or packaged-app execution are especially important.
 
 Do not submit copyrighted books or private library files with a report. Use a minimal synthetic reproduction whenever possible.

@@ -1,5 +1,5 @@
 /**
- * Novera — EPUB Engine (epub.js wrapper)
+ * Lirune Reader — EPUB Engine (epub.js wrapper)
  * Renders EPUB books, manages TOC, navigation, annotations, and in-book search.
  */
 
@@ -11,7 +11,9 @@ const EpubLoader = (() => {
   let isBookLoaded = false;
   let searchResults = [];
   let currentSearchIdx = -1;
+  let searchGeneration = 0;
   let activeSelection = null; // { cfiRange, text, chapter }
+  let annotationCache = [];
   let lastNavigationAt = 0;
 
   const HIGHLIGHT_COLORS = {
@@ -24,12 +26,16 @@ const EpubLoader = (() => {
   };
 
   async function openBook(bookRecord, targetCfi = null) {
-    if (!bookRecord || !bookRecord.fileData) {
-      Utils.toast('Book file data is missing or corrupted', 'error');
+    if (!bookRecord) {
+      Utils.toast('Book record is missing or corrupted', 'error');
       return false;
     }
 
     currentBookData = bookRecord;
+    annotationCache = [];
+    searchGeneration++;
+    searchResults = [];
+    currentSearchIdx = -1;
     showLoading(true, 'Opening book...');
 
     // Clean up previous book & rendition to prevent memory leaks
@@ -51,8 +57,14 @@ const EpubLoader = (() => {
     if (container) container.innerHTML = '';
 
     try {
-       // Initialize ePub instance from ArrayBuffer
-      currentBook = ePub(bookRecord.fileData);
+      let epubData = bookRecord.fileData;
+      if (!epubData && bookRecord.storageId && window.noveraDesktop?.readManagedBook) {
+        epubData = await window.noveraDesktop.readManagedBook(bookRecord.storageId, bookRecord.fingerprint, bookRecord.fileSize);
+      }
+      if (!epubData) throw new Error('Book file is unavailable');
+
+      // Initialize ePub instance from the selected book only.
+      currentBook = ePub(epubData);
 
       const settings = ReaderSettings.getSettings();
 
@@ -66,7 +78,7 @@ const EpubLoader = (() => {
       });
 
       // Register a default theme with body colors BEFORE display() so the
-      // iframe is painted with Novera's theme immediately instead of flashing
+      // iframe is painted with Lirune's theme immediately instead of flashing
       // epub.js's default white background / black text.
       registerDefaultTheme();
 
@@ -106,6 +118,9 @@ const EpubLoader = (() => {
 
     } catch (err) {
       console.error('Error rendering book:', err);
+      if (bookRecord.storageId && /unavailable|corrupt/i.test(err.message || '')) {
+        await NoveraDB.updateAvailability?.(bookRecord.id, 'unavailable');
+      }
       showLoading(false);
       Utils.toast('Failed to load EPUB: ' + (err.message || 'Invalid format'), 'error');
       return false;
@@ -157,15 +172,6 @@ const EpubLoader = (() => {
 
   function injectIframeStyles(doc) {
     if (!doc || !doc.head) return;
-
-    // Ensure Google Fonts link is present in iframe
-    if (!doc.getElementById('novera-iframe-fonts')) {
-      const fontLink = doc.createElement('link');
-      fontLink.id = 'novera-iframe-fonts';
-      fontLink.rel = 'stylesheet';
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap';
-      doc.head.appendChild(fontLink);
-    }
 
     // Add base reset and smoothing inside iframe
     if (!doc.getElementById('novera-iframe-base')) {
@@ -590,6 +596,7 @@ const EpubLoader = (() => {
     };
 
     await NoveraDB.saveAnnotation(annotation);
+    annotationCache.push(annotation);
     renderHighlightOnPage(annotation);
     hideSelectionToolbar();
     refreshAnnotationsPanel();
@@ -620,8 +627,8 @@ const EpubLoader = (() => {
   }
 
   async function loadAnnotations(bookId) {
-    const annotations = await NoveraDB.getAnnotations(bookId);
-    annotations.forEach(ann => {
+    annotationCache = await NoveraDB.getAnnotations(bookId);
+    annotationCache.forEach(ann => {
       if (ann.type === 'highlight' || ann.type === 'note') {
         renderHighlightOnPage(ann);
       }
@@ -634,11 +641,11 @@ const EpubLoader = (() => {
     if (!loc || !loc.start) return;
 
     const cfi = loc.start.cfi;
-    const annotations = await NoveraDB.getAnnotations(currentBookData.id);
-    const existing = annotations.find(a => a.type === 'bookmark' && a.cfiRange === cfi);
+    const existing = annotationCache.find(a => a.type === 'bookmark' && a.cfiRange === cfi);
 
     if (existing) {
       await NoveraDB.deleteAnnotation(existing.id);
+      annotationCache = annotationCache.filter(annotation => annotation.id !== existing.id);
       Utils.toast('Bookmark removed');
     } else {
       const chapter = document.getElementById('progress-chapter').textContent || 'Bookmark';
@@ -654,6 +661,7 @@ const EpubLoader = (() => {
         dateAdded: Date.now()
       };
       await NoveraDB.saveAnnotation(bm);
+      annotationCache.push(bm);
       Utils.toast('Page bookmarked', 'success');
     }
 
@@ -666,16 +674,15 @@ const EpubLoader = (() => {
     const listEl = document.getElementById('ann-list-content');
     if (!listEl) return;
 
-    const annotations = await NoveraDB.getAnnotations(currentBookData.id);
     const activeTab = document.querySelector('.ann-tab.active')?.dataset.tab || 'highlights';
 
     let filtered = [];
     if (activeTab === 'highlights') {
-      filtered = annotations.filter(a => a.type === 'highlight');
+      filtered = annotationCache.filter(a => a.type === 'highlight');
     } else if (activeTab === 'notes') {
-      filtered = annotations.filter(a => a.type === 'note');
+      filtered = annotationCache.filter(a => a.type === 'note');
     } else if (activeTab === 'bookmarks') {
-      filtered = annotations.filter(a => a.type === 'bookmark');
+      filtered = annotationCache.filter(a => a.type === 'bookmark');
     }
 
     listEl.innerHTML = '';
@@ -729,6 +736,7 @@ const EpubLoader = (() => {
         delBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           await NoveraDB.deleteAnnotation(item.id);
+          annotationCache = annotationCache.filter(annotation => annotation.id !== item.id);
           refreshAnnotationsPanel();
           if (currentBookData) {
             checkBookmarkStatus(rendition?.currentLocation()?.start?.cfi);
@@ -742,7 +750,12 @@ const EpubLoader = (() => {
 
   // In-book Search
   async function searchBook(query) {
-    if (!currentBook || !query || query.trim().length < 2) return;
+    const generation = ++searchGeneration;
+    if (!currentBook || !query || query.trim().length < 2) {
+      searchResults = [];
+      currentSearchIdx = -1;
+      return;
+    }
 
     const countEl = document.getElementById('search-count');
     const resultsEl = document.getElementById('search-results');
@@ -755,24 +768,24 @@ const EpubLoader = (() => {
     try {
       // Search through each spine section
       const spine = currentBook.spine?.spineItems || [];
-      const promises = spine.map(item => {
-        return item.load(currentBook.load.bind(currentBook)).then(doc => {
-          const results = item.find(query.trim());
-          item.unload();
-          return results || [];
-        }).catch(err => {
-          console.warn('Spine item search skipped:', err);
-          try { item.unload(); } catch (_) {}
-          return [];
-        });
-      });
-
-      const allFound = await Promise.all(promises);
-      allFound.forEach(arr => {
-        if (arr && arr.length) {
-          searchResults.push(...arr);
+      const concurrency = 3;
+      let nextIndex = 0;
+      const worker = async () => {
+        while (nextIndex < spine.length && generation === searchGeneration) {
+          const item = spine[nextIndex++];
+          try {
+            await item.load(currentBook.load.bind(currentBook));
+            const results = item.find(query.trim());
+            if (results?.length) searchResults.push(...results);
+          } catch (err) {
+            console.warn('Spine item search skipped:', err.message || err);
+          } finally {
+            try { item.unload(); } catch (_) {}
+          }
         }
-      });
+      };
+      await Promise.all(Array.from({ length: Math.min(concurrency, spine.length) }, worker));
+      if (generation !== searchGeneration) return;
 
       if (countEl) countEl.textContent = `${searchResults.length} results`;
 

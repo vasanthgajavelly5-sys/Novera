@@ -1,5 +1,5 @@
 /* =============================================================
-   NOVERA — Library / Home View
+  LIRUNE READER — Library / Home View
    ============================================================= */
 
 /* ── Library view ────────────────────────────────────────── */
@@ -454,8 +454,14 @@
   color: #FBBF24;
   filter: drop-shadow(0 1px 4px rgba(0,0,0,0.4));
   display: none;
+  z-index: 2;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
 }
-.card-fav.visible { display: block; }
+.card-fav.visible, .book-card:hover .card-fav { display: flex; }
+.card-badge-warning { background: var(--status-warning); color: #11151B; }
 
 /* Card meta */
 .card-meta { padding: var(--sp-3) var(--sp-1) 0; }

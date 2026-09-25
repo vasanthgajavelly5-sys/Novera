@@ -1,5 +1,5 @@
 /**
- * Novera — Library Management System
+ * Lirune Reader — Library Management System
  * Handles drag-and-drop, EPUB ingestion, IndexedDB persistence,
  * library rendering, search, sort, and sample book generation.
  */
@@ -7,6 +7,9 @@
 const Library = (() => {
   let allBooks = [];
   let currentSort = 'recent';
+  let currentFilter = 'all';
+  let currentCollection = 'all';
+  let collections = [];
   let searchQuery = '';
   let isListView = false;
   let activeContextBook = null;
@@ -17,6 +20,12 @@ const Library = (() => {
     bindDropAndFileInput();
     bindSearchAndSort();
     bindModals();
+    document.getElementById('integrity-check-btn')?.addEventListener('click', checkIntegrity);
+    document.getElementById('export-annotations-btn')?.addEventListener('click', exportAnnotations);
+    document.getElementById('backup-library-btn')?.addEventListener('click', backupMetadata);
+    document.getElementById('restore-library-input')?.addEventListener('change', restoreMetadata);
+    collections = await NoveraDB.getCollections();
+    renderCollectionOptions();
     await loadAndRenderBooks();
   }
 
@@ -42,6 +51,12 @@ const Library = (() => {
 
     // Filter books by search query
     let filtered = allBooks.filter(book => {
+      const progress = Number(book.progressPercent) || 0;
+      if (currentCollection !== 'all' && !book.collectionIds?.includes(currentCollection)) return false;
+      if (currentFilter === 'unread' && progress > 0) return false;
+      if (currentFilter === 'progress' && (progress <= 0 || progress >= 100)) return false;
+      if (currentFilter === 'finished' && progress < 100) return false;
+      if (currentFilter === 'favorites' && !book.favorite) return false;
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       return (book.title && book.title.toLowerCase().includes(q)) ||
@@ -74,7 +89,7 @@ const Library = (() => {
     renderContinueReading();
 
     // Check if search returned zero results
-    if (filtered.length === 0 && searchQuery) {
+    if (filtered.length === 0 && (searchQuery || currentFilter !== 'all')) {
       if (booksGrid) booksGrid.innerHTML = '';
       if (emptyState) emptyState.classList.remove('hidden');
       return;
@@ -142,6 +157,7 @@ const Library = (() => {
       card.setAttribute('tabindex', '0');
 
       const pct = book.progressPercent || 0;
+      const unavailable = book.availability === 'unavailable';
 
       const coverHtml = book.coverDataUrl
         ? `<img src="${book.coverDataUrl}" alt="${Utils.escapeHTML(book.title)}" class="card-cover" loading="lazy">`
@@ -153,6 +169,10 @@ const Library = (() => {
       card.innerHTML = `
         <div class="card-cover-wrap">
           ${coverHtml}
+          ${unavailable ? '<div class="card-badge card-badge-warning">File unavailable</div>' : ''}
+            <button class="card-fav ${book.favorite ? 'visible' : ''}" type="button" aria-label="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}" title="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${book.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 8.8c0 5.5-8.8 10.2-8.8 10.2S3.2 14.3 3.2 8.8A4.6 4.6 0 0 1 12 6.1a4.6 4.6 0 0 1 8.8 2.7Z"/></svg>
+            </button>
           ${pct > 0 ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width:${pct}%"></div></div>` : ''}
           ${pct >= 100 ? `<div class="card-badge">Completed</div>` : (pct > 0 ? `<div class="card-badge">${pct}%</div>` : '')}
         </div>
@@ -161,6 +181,13 @@ const Library = (() => {
           <div class="card-author">${Utils.escapeHTML(book.author || 'Unknown')}</div>
         </div>
       `;
+
+      const favoriteButton = card.querySelector('.card-fav');
+      favoriteButton?.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        book.favorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
+        renderLibraryUI();
+      });
 
       // Click to open book
       card.addEventListener('click', (e) => {
@@ -365,6 +392,7 @@ const Library = (() => {
     let importedCount = 0;
     const errors = [];
     for (const [index, file] of fileList.entries()) {
+      let savedStorageId = null;
       try {
         const completed = Math.round((index / fileList.length) * 100);
         updateProgress?.(completed, `Importing ${index + 1} of ${fileList.length}: ${file.name}`);
@@ -377,14 +405,16 @@ const Library = (() => {
         const bookData = await parseEpubMetadata(file.data, file.name, file.size);
         bookData.fingerprint = await getFingerprint(file.data, file.size, file.name);
         if (allBooks.some(book => book.fingerprint && book.fingerprint === bookData.fingerprint)) continue;
-        bookData.diskPath = file.path;
         bookData.sourcePath = file.path;
 
         // Persist copy in AppData storage if needed
         if (window.noveraDesktop && window.noveraDesktop.saveBookToStorage) {
-          const res = await window.noveraDesktop.saveBookToStorage(file.name, file.data);
+          const res = await window.noveraDesktop.saveBookToStorage(file.name, file.data, `${bookData.fingerprint}.epub`);
           if (res && res.success) {
-            bookData.diskPath = res.path;
+            bookData.storageId = res.storageId;
+            savedStorageId = res.storageId;
+          } else {
+            throw new Error(res?.error || 'Could not save EPUB to managed storage');
           }
         }
 
@@ -392,6 +422,9 @@ const Library = (() => {
         importedCount++;
       } catch (err) {
         console.error('Failed to import EPUB:', file.name, err);
+        if (savedStorageId) {
+          try { await window.noveraDesktop.deleteBookFromStorage(savedStorageId); } catch (_) {}
+        }
         errors.push({ name: file.name, error: err.message || 'Unreadable EPUB' });
       }
     }
@@ -410,6 +443,7 @@ const Library = (() => {
 
     let importedCount = 0;
     for (const file of fileList) {
+      let savedStorageId = null;
       try {
         const arrayBuffer = await file.arrayBuffer();
         await validateEpubArchive(arrayBuffer);
@@ -419,9 +453,12 @@ const Library = (() => {
 
         // If on desktop, save copy to AppData
         if (window.noveraDesktop && window.noveraDesktop.saveBookToStorage) {
-          const res = await window.noveraDesktop.saveBookToStorage(file.name, arrayBuffer);
+          const res = await window.noveraDesktop.saveBookToStorage(file.name, arrayBuffer, `${bookData.fingerprint}.epub`);
           if (res && res.success) {
-            bookData.diskPath = res.path;
+            bookData.storageId = res.storageId;
+            savedStorageId = res.storageId;
+          } else {
+            throw new Error(res?.error || 'Could not save EPUB to managed storage');
           }
         }
 
@@ -429,6 +466,9 @@ const Library = (() => {
         importedCount++;
       } catch (err) {
         console.error('Failed to import EPUB:', file.name, err);
+        if (savedStorageId) {
+          try { await window.noveraDesktop.deleteBookFromStorage(savedStorageId); } catch (_) {}
+        }
         Utils.toast(`Could not import "${file.name}"`, 'error');
       }
     }
@@ -503,7 +543,9 @@ const Library = (() => {
       author,
       description,
       coverDataUrl,
-      fileData: arrayBuffer,
+      ...(window.noveraDesktop ? {} : { fileData: arrayBuffer }),
+      originalName: fileName,
+      schemaVersion: 2,
       fileSize: fileSize || arrayBuffer.byteLength,
       dateAdded: Date.now(),
       lastReadDate: 0,
@@ -560,6 +602,9 @@ const Library = (() => {
     const searchInput = document.getElementById('lib-search-input');
     const clearBtn = document.getElementById('clear-search-btn');
     const sortSelect = document.getElementById('sort-select');
+    const filterSelect = document.getElementById('filter-select');
+    const collectionSelect = document.getElementById('collection-select');
+    const newCollectionButton = document.getElementById('new-collection-btn');
     const viewToggle = document.getElementById('view-toggle-btn');
 
     if (searchInput) {
@@ -584,12 +629,139 @@ const Library = (() => {
       });
     }
 
+    if (filterSelect) {
+      filterSelect.addEventListener('change', (e) => {
+        currentFilter = e.target.value;
+        renderLibraryUI();
+      });
+    }
+
     if (viewToggle) {
       viewToggle.addEventListener('click', () => {
         isListView = !isListView;
         viewToggle.classList.toggle('active', isListView);
         renderLibraryUI();
       });
+    }
+
+    collectionSelect?.addEventListener('change', event => {
+      currentCollection = event.target.value;
+      renderLibraryUI();
+    });
+    newCollectionButton?.addEventListener('click', createCollection);
+  }
+
+  function renderCollectionOptions() {
+    const select = document.getElementById('collection-select');
+    if (!select) return;
+    select.replaceChildren(new Option('All collections', 'all'));
+    collections.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(collection => {
+      select.appendChild(new Option(collection.name, collection.id));
+    });
+    select.value = currentCollection;
+  }
+
+  async function createCollection() {
+    const name = window.prompt('Collection name');
+    const trimmed = name?.trim();
+    if (!trimmed) return;
+    if (collections.some(collection => collection.name.toLowerCase() === trimmed.toLowerCase())) {
+      Utils.toast('A collection with that name already exists', 'error');
+      return;
+    }
+    const collection = { id: Utils.generateId(), name: trimmed, dateCreated: Date.now() };
+    await NoveraDB.saveCollection(collection);
+    collections.push(collection);
+    renderCollectionOptions();
+    currentCollection = collection.id;
+    const select = document.getElementById('collection-select');
+    if (select) select.value = currentCollection;
+    renderLibraryUI();
+  }
+
+  async function checkIntegrity() {
+    if (!window.noveraDesktop?.listManagedBooks) {
+      Utils.toast('Integrity checks are available in the desktop app', 'info');
+      return;
+    }
+    try {
+      const storedIds = new Set(await window.noveraDesktop.listManagedBooks());
+      const missing = allBooks.filter(book => book.storageId && !storedIds.has(book.storageId));
+      const legacy = allBooks.filter(book => !book.storageId);
+      if (missing.length === 0 && legacy.length === 0) {
+        Utils.toast(`Library check complete: ${allBooks.length} healthy book${allBooks.length === 1 ? '' : 's'}.`, 'success');
+        return;
+      }
+      for (const book of missing) {
+        if (book.availability !== 'unavailable') await NoveraDB.updateAvailability(book.id, 'unavailable');
+        book.availability = 'unavailable';
+      }
+      renderLibraryUI();
+      Utils.toast(`Library check: ${allBooks.length - missing.length - legacy.length} healthy, ${missing.length} missing, ${legacy.length} needing migration.`, 'info', 5000);
+    } catch (error) {
+      console.error('Library integrity check failed:', error);
+      Utils.toast('Could not check library integrity', 'error');
+    }
+  }
+
+  function downloadText(filename, content, type = 'application/json') {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function backupMetadata() {
+    try {
+      const [books, annotations, preferences, savedCollections] = await Promise.all([
+        NoveraDB.getAllBooks(), NoveraDB.getAllAnnotations(), NoveraDB.getAllPreferences(), NoveraDB.getCollections()
+      ]);
+      downloadText(`lirune-metadata-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({
+        format: 'NOVERA_METADATA_BACKUP', version: 1, createdAt: Date.now(), books, annotations, preferences, collections: savedCollections
+      }, null, 2));
+      Utils.toast('Metadata backup exported', 'success');
+    } catch (error) {
+      console.error('Metadata backup failed:', error);
+      Utils.toast('Could not create a metadata backup', 'error');
+    }
+  }
+
+  async function exportAnnotations() {
+    try {
+      const [annotations, books] = await Promise.all([NoveraDB.getAllAnnotations(), NoveraDB.getAllBooks()]);
+      const booksById = new Map(books.map(book => [book.id, book]));
+      const markdown = annotations.map(annotation => {
+        const book = booksById.get(annotation.bookId) || {};
+        return `## ${book.title || 'Untitled'}\n\n- Author: ${book.author || 'Unknown'}\n- Type: ${annotation.type}\n- Chapter: ${annotation.chapter || 'Unknown'}\n- Date: ${new Date(annotation.dateAdded || Date.now()).toLocaleString()}\n\n> ${annotation.text || ''}\n\n${annotation.note ? `Note: ${annotation.note}\n` : ''}`;
+      }).join('\n');
+      downloadText(`lirune-annotations-${new Date().toISOString().slice(0, 10)}.md`, markdown, 'text/markdown');
+      Utils.toast('Annotations exported as Markdown', 'success');
+    } catch (error) {
+      console.error('Annotation export failed:', error);
+      Utils.toast('Could not export annotations', 'error');
+    }
+  }
+
+  async function restoreMetadata(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      if (backup.format !== 'NOVERA_METADATA_BACKUP' || backup.version !== 1 || !Array.isArray(backup.books) || !Array.isArray(backup.annotations)) {
+        throw new Error('Unsupported backup format');
+      }
+      for (const book of backup.books) await NoveraDB.saveBook(book);
+      for (const annotation of backup.annotations) await NoveraDB.saveAnnotation(annotation);
+      for (const collection of backup.collections || []) await NoveraDB.saveCollection(collection);
+      for (const [key, value] of Object.entries(backup.preferences || {})) await NoveraDB.setPref(key, value);
+      await loadAndRenderBooks();
+      Utils.toast('Metadata backup restored', 'success');
+    } catch (error) {
+      console.error('Metadata restore failed:', error);
+      Utils.toast('Backup is invalid or could not be restored', 'error');
     }
   }
 
@@ -599,6 +771,7 @@ const Library = (() => {
     const ctxRead = document.getElementById('ctx-read');
     const ctxDetails = document.getElementById('ctx-details');
     const ctxDelete = document.getElementById('ctx-delete');
+    const ctxCollection = document.getElementById('ctx-collection');
     const deleteModal = document.getElementById('delete-book-modal');
     const cancelDeleteButton = document.getElementById('cancel-delete-book-btn');
     const confirmDeleteButton = document.getElementById('confirm-delete-book-btn');
@@ -634,8 +807,8 @@ const Library = (() => {
     const ctxReveal = document.getElementById('ctx-reveal');
     if (ctxReveal) {
       ctxReveal.addEventListener('click', () => {
-        if (activeContextBook && activeContextBook.diskPath && window.noveraDesktop) {
-          window.noveraDesktop.showInExplorer(activeContextBook.diskPath);
+        if (activeContextBook && activeContextBook.storageId && window.noveraDesktop) {
+          window.noveraDesktop.showInExplorer(activeContextBook.storageId);
         } else {
           Utils.toast('File location on disk not available', 'info');
         }
@@ -649,6 +822,20 @@ const Library = (() => {
         }
       });
     }
+
+    ctxCollection?.addEventListener('click', async () => {
+      if (!activeContextBook || collections.length === 0) {
+        Utils.toast('Create a collection first', 'info');
+        return;
+      }
+      const choices = collections.map((collection, index) => `${index + 1}. ${collection.name}`).join('\n');
+      const selected = Number(window.prompt(`Add "${activeContextBook.title}" to which collection?\n${choices}`));
+      const collection = collections[selected - 1];
+      if (!collection) return;
+      const included = !activeContextBook.collectionIds?.includes(collection.id);
+      activeContextBook.collectionIds = await NoveraDB.setBookCollection(activeContextBook.id, collection.id, included);
+      await loadAndRenderBooks();
+    });
 
     // Book details modal buttons
     const closeDetailsBtn = document.getElementById('close-details-btn');
@@ -735,9 +922,20 @@ const Library = (() => {
   async function deleteBook(id) {
     if (!await confirmBookRemoval()) return;
     const book = await NoveraDB.getBook(id);
-    await NoveraDB.deleteBook(id);
-    if (book?.diskPath && window.noveraDesktop?.deleteBookFromStorage) {
-      await window.noveraDesktop.deleteBookFromStorage(book.diskPath);
+    try {
+      await NoveraDB.deleteBook(id);
+    } catch (error) {
+      Utils.toast('The book could not be removed from the library.', 'error');
+      console.error('Failed to delete book metadata:', error);
+      return;
+    }
+    if (book?.storageId && window.noveraDesktop?.deleteBookFromStorage) {
+      const deleted = await window.noveraDesktop.deleteBookFromStorage(book.storageId);
+      if (!deleted) {
+        Utils.toast('Book removed from the library. Its managed file remains and can be recovered from the data folder.', 'info', 5000);
+        await loadAndRenderBooks();
+        return;
+      }
     }
     Utils.toast('Book removed from library', 'info');
     await loadAndRenderBooks();
@@ -784,7 +982,7 @@ const Library = (() => {
     <dc:language>en</dc:language>
     <dc:identifier id="BookId">urn:uuid:novera-sample-alice-1865</dc:identifier>
     <dc:description>The classic 1865 English tale of Alice tumbling down a rabbit hole into a fantastical, whimsical world of curious creatures.</dc:description>
-    <dc:publisher>Novera Classics</dc:publisher>
+    <dc:publisher>Lirune Classics</dc:publisher>
   </metadata>
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
@@ -897,7 +1095,8 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
         author: 'Lewis Carroll',
         description: 'The timeless masterpiece of Alice falling down a rabbit hole into a world of unbridled imagination and absurdity.',
         coverDataUrl,
-        fileData: arrayBuffer,
+        ...(window.noveraDesktop ? {} : { fileData: arrayBuffer }),
+        schemaVersion: 2,
         fileSize: arrayBuffer.byteLength,
         dateAdded: Date.now(),
         lastReadDate: 0,
@@ -906,6 +1105,12 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
         currentChapter: 'Chapter I: Down the Rabbit-Hole'
       };
 
+      if (window.noveraDesktop?.saveBookToStorage) {
+        const storageId = `${await getFingerprint(arrayBuffer, arrayBuffer.byteLength, 'sample')}.epub`;
+        const result = await window.noveraDesktop.saveBookToStorage('alice-in-wonderland.epub', arrayBuffer, storageId);
+        if (!result?.success) throw new Error(result?.error || 'Could not save sample book');
+        sampleBook.storageId = result.storageId;
+      }
       await NoveraDB.saveBook(sampleBook);
       Utils.toast('Sample book added! Opening now...', 'success');
       await loadAndRenderBooks();
@@ -965,7 +1170,7 @@ blockquote { margin: 1.5em 2em; font-style: italic; }
     // Edition
     ctx.fillStyle = 'rgba(221, 214, 254, 0.6)';
     ctx.font = '12px Inter, sans-serif';
-    ctx.fillText("NOVERA CLASSIC EDITION", 200, 520);
+    ctx.fillText("LIRUNE CLASSIC EDITION", 200, 520);
 
     return canvas.toDataURL('image/jpeg', 0.9);
   }

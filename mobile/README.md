@@ -1,6 +1,6 @@
-# Novera Mobile
+# Lirune Reader Mobile
 
-Novera Mobile is the Android and iOS application foundation for version 4.0. It is built with Expo and React Native so both platforms share the same TypeScript UI and product behavior.
+Lirune Reader Mobile is the Android and iOS application foundation for version 4.0. It is built with Expo and React Native so both platforms share the same TypeScript UI and product behavior.
 
 ## Run locally
 

@@ -1,53 +1,40 @@
-# Novera
+# Lirune Reader
 
 > A calm, private home for your EPUB library on Windows.
 
-Novera is a free and open-source Windows desktop reader for EPUB books. It keeps your library, reading progress, highlights, notes, themes, and preferences on your computer—without an account or cloud library.
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D4?logo=windows&logoColor=white)](#install-on-windows)
+Lirune Reader is a free and open-source Windows desktop reader for EPUB books. It keeps your library, reading progress, highlights, notes, themes, and preferences on your computer without an account or cloud library.
 
 ## Features
 
-- Browse a focused local library with cover art, search, sorting, grid and list views, reading progress, and continue-reading.
-- Read EPUB 2 and EPUB 3 books in paginated or scrolling layouts.
-- Adjust themes, typography, spacing, margins, alignment, and page spread for a more comfortable reading experience.
-- Use table of contents navigation, in-book search, bookmarks, highlights, and notes.
-- Import a book, a folder of books, or drop EPUB files onto the library.
-- Open `.epub` files directly from Windows Explorer after installing Novera.
-- Keep a local copy of imported books so the library is not tied to the original file location.
+- Local library with cover art, search, sorting, grid/list views, progress, favorites, collections, and continue reading.
+- EPUB 2 and EPUB 3 reading in paginated or scrolling layouts.
+- Table of contents, in-book search, bookmarks, highlights, notes, and Markdown annotation export.
+- Single-file, folder, recursive, drag-and-drop, and Explorer imports.
+- Collision-safe managed EPUB storage outside normal IndexedDB metadata reads.
+- Local metadata backup and restore.
+- Offline-first operation with no account, cloud library, telemetry, or remote font dependency.
 
-## Screenshots
+## Install On Windows
 
-Novera deliberately does not use mockups or stock screenshots. Release screenshots will be captured from the packaged Windows application and added here with the first public release assets.
+Download the latest `Lirune Reader-<version>-Setup.exe` from the repository's Releases page. The installer adds Start Menu and desktop shortcuts and associates `.epub` files with Lirune Reader.
 
-## Install on Windows
+Unsigned development releases may trigger Windows reputation or Application Control warnings. Verify that installers came from the official project release before running them.
 
-Download the latest `Novera-<version>-Setup.exe` from the repository’s [Releases](../../releases) page, then run the installer. The installer adds Start Menu and desktop shortcuts and associates `.epub` files with Novera.
+## EPUB Compatibility
 
-Windows may show a reputation warning for an unsigned new release. Verify that the installer came from the project’s official Releases page before continuing.
+Lirune Reader accepts standard EPUB 2 and EPUB 3 ZIP packages with `META-INF/container.xml` and an OPF package document. It supports nested OPF paths, Unicode filenames, incomplete metadata, and cover resources when epub.js can resolve them.
 
-## EPUB compatibility
-
-Novera accepts standard EPUB 2 and EPUB 3 ZIP packages with `META-INF/container.xml` and an OPF package document. It supports nested package paths, Unicode filenames, incomplete metadata, and cover resources when they can be resolved by epub.js.
-
-DRM-protected books and EPUBs with encrypted resources are detected and rejected with an explanation. Novera does not bypass DRM. Malformed archives, missing container files, missing OPFs, and unreadable books are reported per file without stopping a folder import.
+DRM-protected books and EPUBs with encrypted resources are detected and rejected. Lirune Reader does not bypass DRM. Malformed archives and invalid package documents are reported without stopping a folder import.
 
 ## Privacy
 
-Your books and reading data stay on your computer. Novera does not require an account and does not upload book content, annotations, or library metadata.
+Books and reading data stay on the computer. Managed EPUB binaries are stored in local application storage. IndexedDB stores metadata, reading state, annotations, preferences, favorites, and collections; it does not serve as the library's binary store after migration.
 
-Imported books are stored in Novera’s local application storage and in its local IndexedDB database. The interface currently loads its optional web fonts from Google Fonts when an internet connection is available; no book content is sent with those requests.
+Lirune Reader does not require an account and does not upload book content, annotations, or library metadata. See [PRIVACY.md](docs/PRIVACY.md) and [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Support Novera
+## Development
 
-Novera is free software. If it makes your reading time better, you can support ongoing development with a coffee:
-
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/vasanthgajavelly)
-
-## Develop locally
-
-Requirements: Windows 10 or later, [Node.js](https://nodejs.org/) 20 or newer, and npm.
+Requirements: Windows 10 or later, Node.js 20 or newer, and npm.
 
 ```powershell
 git clone https://github.com/vasanthgajavelly5-sys/Novera.git
@@ -59,39 +46,31 @@ npm start
 Useful commands:
 
 ```powershell
-npm run validate:corpus  # Validates a locally available EPUB test corpus
-npm run pack             # Builds an unpacked Windows application
-npm run dist:win         # Creates the NSIS Windows installer
+npm run lint
+npm test
+npm run audit
+npm run validate:corpus
+npm run pack
+npm run dist:win
+npm run validate:release
+npm run dist:store
 ```
 
-`Master_EPUB_Library_All/` is an optional local regression corpus and is intentionally ignored by Git. Do not add books, private libraries, or generated corpus reports to commits.
+`Master_EPUB_Library_All/` is an optional local regression corpus and is intentionally ignored by Git. Do not add books, private libraries, credentials, or generated user storage to commits.
 
-## Mobile app
+## Mobile App
 
-The `android` branch contains the Novera 4 mobile app in [mobile](mobile). It uses Expo and React Native so the Android and iOS applications share one TypeScript codebase.
-
-```powershell
-cd mobile
-npm install
-npm start
-```
-
-The mobile foundation includes the Novera library experience, EPUB document import entry point, offline-first messaging, reading progress, stats, app themes, and a touch-oriented reader shell. Native EPUB pagination, persistent file storage, highlights, and annotations are the next integration layer and are intentionally isolated from the UI shell.
+The `android` branch contains the Lirune Reader mobile foundation in [mobile](mobile). It uses Expo and React Native and remains a separate mobile integration layer.
 
 ## Troubleshooting
 
-- **A book will not import:** Check the displayed error. Novera rejects invalid archives, missing EPUB package files, encrypted EPUB resources, and DRM-protected books.
-- **An EPUB does not open from Explorer:** Re-run the installer, then try opening the file again. The installer registers the `.epub` association.
-- **The app will not start from source:** Run `npm ci` again, confirm a supported Node.js version with `node --version`, and retry `npm start`.
-- **A packaged build cannot locate its files:** Build with `npm run pack` or reinstall the NSIS installer; do not open `index.html` directly.
-- **I need to reset my library:** Novera stores data locally. Back up your application data before clearing it, because doing so removes books, annotations, and preferences.
-
-## Contributing
-
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and follow the [Code of Conduct](CODE_OF_CONDUCT.md). Keep changes focused, preserve existing user data, and never commit private books, credentials, signing files, or generated user storage.
+- **A book will not import:** Check the displayed error. Lirune Reader rejects invalid archives, missing package files, encrypted resources, and DRM-protected books.
+- **An EPUB does not open from Explorer:** Re-run the installer and try again. The installer registers the `.epub` association.
+- **The app will not start from source:** Run `npm ci`, confirm Node.js with `node --version`, and retry `npm start`.
+- **I need to reset my library:** Back up application data first. Resetting application data removes books, annotations, and preferences.
 
 ## License
 
-Copyright © 2026 Novera contributors.
+Copyright © 2026 Lirune Reader contributors.
 
-Novera is licensed under the [GNU General Public License v3.0 only](LICENSE). See [COPYRIGHT.md](COPYRIGHT.md) for the project notice.
+Lirune Reader is licensed under the [GNU General Public License v3.0 only](LICENSE). See [COPYRIGHT.md](COPYRIGHT.md) for the project notice.

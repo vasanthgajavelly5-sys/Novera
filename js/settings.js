@@ -1,5 +1,5 @@
 /**
- * Novera — Reader Display Settings (Typography, Spacing, Flow & Layout)
+ * Lirune Reader — Reader Display Settings (Typography, Spacing, Flow & Layout)
  */
 
 const ReaderSettings = (() => {
@@ -14,6 +14,7 @@ const ReaderSettings = (() => {
   };
 
   let currentSettings = { ...DEFAULT_SETTINGS };
+  let persistTimer = null;
 
   function normalizeSettings(settings) {
     const merged = { ...DEFAULT_SETTINGS, ...settings };
@@ -84,7 +85,8 @@ const ReaderSettings = (() => {
   function setSetting(key, val, shouldApply = true) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) return;
     currentSettings = normalizeSettings({ ...currentSettings, [key]: val });
-    NoveraDB.setPref('readerSettings', currentSettings);
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => NoveraDB.setPref('readerSettings', currentSettings), 250);
     updateUI();
 
     if (shouldApply && typeof EpubLoader !== 'undefined') {
@@ -195,7 +197,8 @@ const ReaderSettings = (() => {
     if (resetButton) {
       resetButton.addEventListener('click', () => {
         currentSettings = { ...DEFAULT_SETTINGS };
-        NoveraDB.setPref('readerSettings', currentSettings);
+        clearTimeout(persistTimer);
+        persistTimer = setTimeout(() => NoveraDB.setPref('readerSettings', currentSettings), 0);
         updateUI();
         if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) EpubLoader.reRender();
       });

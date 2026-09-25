@@ -1,6 +1,6 @@
 @echo off
-title Novera — A beautiful home for your books
+title Lirune Reader — A calm home for your books
 cd /d "%~dp0"
-echo Starting Novera Desktop App...
+echo Starting Lirune Reader...
 npm start
 

@@ -1,15 +1,21 @@
 {
-  "name": "novera",
-  "productName": "Novera",
-  "version": "3.5.0",
+  "name": "lirune",
+  "productName": "Lirune Reader",
+  "version": "4.0.0",
   "description": "A private, open-source Windows EPUB reader",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "lint": "node scripts/lint.js",
+    "test": "node --test",
+    "audit": "npm audit --omit=dev",
     "pack": "electron-builder --dir",
     "validate:corpus": "node scripts/validate-corpus.js",
-    "dist": "electron-builder --win nsis",
-    "dist:win": "electron-builder --win nsis",
+    "dist": "node scripts/build-win.js",
+    "dist:win": "node scripts/build-win.js",
+    "dist:store": "node scripts/build-store.js",
+    "validate:release": "node scripts/validate-release.js",
+    "validate:release:store": "node scripts/validate-release.js --store",
     "build": "electron-builder --win nsis"
   },
   "keywords": [
@@ -38,7 +44,7 @@
   },
   "build": {
     "appId": "com.novera.reader",
-    "productName": "Novera",
+    "productName": "Lirune Reader",
     "copyright": "Copyright © 2026 Vasanth Gajavelly",
     "artifactName": "${productName}-${version}-Setup.${ext}",
     "directories": {
@@ -47,6 +53,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "scripts/storage-contract.js",
       "index.html",
       "css/**/*",
       "js/**/*",
@@ -84,8 +91,8 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Novera",
-      "uninstallDisplayName": "Novera EPUB Reader",
+      "shortcutName": "Lirune Reader",
+      "uninstallDisplayName": "Lirune Reader",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": "assets/icon.ico",

@@ -1,5 +1,5 @@
 /**
- * Novera — Utility Functions & Toast System
+ * Lirune Reader — Utility Functions & Toast System
  */
 
 const Utils = {
@@ -17,6 +17,7 @@ const Utils = {
 
   // UUID generator for IDs
   generateId: () => {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
     return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 7);
   },
 
