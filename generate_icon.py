@@ -7,19 +7,19 @@ def create_icon():
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Minimal glass book mark with Lirune's fixed lavender-white brand accent.
+    # Minimal glass book mark with Lirune's charcoal and off-white brand palette.
     margin = 52
     draw.rounded_rectangle([margin, margin, size - margin, size - margin], radius=104,
-                           fill=(27, 25, 38, 255), outline=(238, 236, 248, 110), width=5)
+                           fill=(32, 33, 36, 255), outline=(248, 248, 245, 110), width=5)
     draw.rounded_rectangle([122, 96, 390, 394], radius=32,
-                           fill=(47, 44, 62, 255), outline=(238, 236, 248, 180), width=6)
+                           fill=(43, 45, 49, 255), outline=(248, 248, 245, 180), width=6)
     draw.polygon([(104, 116), (294, 116), (294, 372), (199, 326), (104, 372)],
-                 fill=(35, 32, 49, 255), outline=(238, 236, 248, 220))
+                 fill=(35, 37, 41, 255), outline=(248, 248, 245, 220))
     draw.polygon([(244, 116), (294, 116), (294, 372), (269, 359), (244, 372)],
-                 fill=(238, 236, 248, 255))
-    draw.line([(148, 170), (246, 170)], fill=(238, 236, 248, 230), width=8)
-    draw.line([(148, 210), (246, 210)], fill=(213, 210, 228, 210), width=7)
-    draw.line([(148, 250), (220, 250)], fill=(188, 184, 206, 190), width=7)
+                 fill=(248, 248, 245, 255))
+    draw.line([(148, 170), (246, 170)], fill=(248, 248, 245, 230), width=8)
+    draw.line([(148, 210), (246, 210)], fill=(224, 224, 219, 210), width=7)
+    draw.line([(148, 250), (220, 250)], fill=(200, 200, 195, 190), width=7)
 
     # Save PNG
     png_path = os.path.join('assets', 'icon.png')
@@ -46,7 +46,7 @@ def create_store_logos():
         
         # Outer rounded rectangle
         draw.rounded_rectangle([margin, margin, target_size - margin, target_size - margin], radius=radius,
-                               fill=(27, 25, 38, 255), outline=(238, 236, 248, 110), width=int(5 * scale))
+                               fill=(32, 33, 36, 255), outline=(248, 248, 245, 110), width=int(5 * scale))
         
         # Inner book shape
         inner_margin_left = int(122 * scale)
@@ -55,7 +55,7 @@ def create_store_logos():
         inner_bottom = int(394 * scale)
         inner_radius = int(32 * scale)
         draw.rounded_rectangle([inner_margin_left, inner_margin_top, inner_right, inner_bottom], radius=inner_radius,
-                               fill=(47, 44, 62, 255), outline=(238, 236, 248, 180), width=int(6 * scale))
+                               fill=(43, 45, 49, 255), outline=(248, 248, 245, 180), width=int(6 * scale))
         
         # Book pages
         page_points = [
@@ -66,7 +66,7 @@ def create_store_logos():
             (int(104 * scale), int(372 * scale))
         ]
         draw.polygon(page_points,
-                     fill=(35, 32, 49, 255), outline=(238, 236, 248, 220))
+                     fill=(35, 37, 41, 255), outline=(248, 248, 245, 220))
         
         # Highlight page
         highlight_points = [
@@ -77,15 +77,15 @@ def create_store_logos():
             (int(244 * scale), int(372 * scale))
         ]
         draw.polygon(highlight_points,
-                     fill=(238, 236, 248, 255))
+                     fill=(248, 248, 245, 255))
         
         # Text lines
         line1 = [(int(148 * scale), int(170 * scale)), (int(246 * scale), int(170 * scale))]
         line2 = [(int(148 * scale), int(210 * scale)), (int(246 * scale), int(210 * scale))]
         line3 = [(int(148 * scale), int(250 * scale)), (int(220 * scale), int(250 * scale))]
-        draw.line(line1, fill=(238, 236, 248, 230), width=int(8 * scale))
-        draw.line(line2, fill=(213, 210, 228, 210), width=int(7 * scale))
-        draw.line(line3, fill=(188, 184, 206, 190), width=int(7 * scale))
+        draw.line(line1, fill=(248, 248, 245, 230), width=int(8 * scale))
+        draw.line(line2, fill=(224, 224, 219, 210), width=int(7 * scale))
+        draw.line(line3, fill=(200, 200, 195, 190), width=int(7 * scale))
         
         # Save store logo
         filename = f'StoreLogo_{target_size}x{target_size}.png'
