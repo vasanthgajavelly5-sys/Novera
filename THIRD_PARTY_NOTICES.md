@@ -2,8 +2,8 @@
 
 Lirune Reader distributes the following runtime and build dependencies. Their license texts are included in the installed application where provided by the package manager.
 
-- `epubjs` 0.3.x: MIT License.
-- `jszip` 3.10.x: MIT License.
+- `epubjs` 0.3.93: BSD-2-Clause License.
+- `jszip` 3.10.1: Dual-licensed under MIT OR GPL-3.0-or-later.
 - Electron 44.x: MIT License and bundled Chromium/Node.js third-party notices.
 - `electron-builder` 26.x: MIT License, used for packaging and not required by the installed reader at runtime.
 

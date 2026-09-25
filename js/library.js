@@ -1413,7 +1413,7 @@ a { color: inherit; text-decoration: underline; }
   <h3>Need to start from source</h3>
   <p>If you are running Lirune from its open-source repository, ensure you have Node.js 20 or higher installed. Run <code>npm ci</code> to install dependencies cleanly, followed by <code>npm start</code> to launch the desktop application.</p>
   <h3>Need to reset the library</h3>
-  <p>If you wish to restore Lirune to a fresh state, you can reset application data from the Settings screen. Please be aware: resetting application data permanently clears your local book library, annotations, bookmarks, reading progress, and custom preferences. Be sure to export your annotations and metadata backups first if you wish to preserve them.</p>
+  <p>Use the Settings screen to adjust reading preferences, appearance, and local library maintenance. Export annotations or create a metadata backup before making changes you may want to undo.</p>
 </body>
 </html>`);
 
