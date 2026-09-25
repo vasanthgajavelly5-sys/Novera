@@ -578,6 +578,21 @@ const EpubLoader = (() => {
     if (rendition) rendition.display(target);
   }
 
+  function scrollBy(dx, dy) {
+    if (!rendition) return;
+    const settings = ReaderSettings.getSettings();
+    if (settings.flow === 'scrolled') {
+      const iframe = document.querySelector('#epub-container iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.scrollBy(dx, dy);
+      }
+    } else {
+      // In paginated mode, fall back to page navigation
+      if (dy < 0) prev();
+      else if (dy > 0) next();
+    }
+  }
+
   // Annotations & Highlights
   async function addHighlight(color = 'yellow', note = '') {
     if (!activeSelection || !currentBookData) return;
@@ -875,6 +890,7 @@ const EpubLoader = (() => {
     next,
     prev,
     goTo,
+    scrollBy,
     addHighlight,
     toggleBookmark,
     refreshAnnotationsPanel,

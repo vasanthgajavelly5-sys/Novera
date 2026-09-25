@@ -43,6 +43,8 @@ npm ci
 npm start
 ```
 
+> This repository is named **Novera** on GitHub but currently hosts **Lirune Reader** (v4.0.2+). The repository URL has not been renamed to preserve release history and issue links.
+
 Useful commands:
 
 ```powershell

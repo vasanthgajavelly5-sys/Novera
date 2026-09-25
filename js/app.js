@@ -441,6 +441,22 @@ const App = (() => {
         } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key.toLowerCase() === 'k' || (e.key === ' ' && e.shiftKey)) {
           e.preventDefault();
           EpubLoader.prev();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const settings = ReaderSettings.getSettings();
+          if (settings.flow === 'scrolled') {
+            EpubLoader.scrollBy(0, -100);
+          } else {
+            EpubLoader.prev();
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const settings = ReaderSettings.getSettings();
+          if (settings.flow === 'scrolled') {
+            EpubLoader.scrollBy(0, 100);
+          } else {
+            EpubLoader.next();
+          }
         } else if (e.key.toLowerCase() === 't') {
           e.preventDefault();
           const tocPanel = document.getElementById('toc-panel');

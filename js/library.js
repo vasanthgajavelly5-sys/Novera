@@ -185,8 +185,9 @@ const Library = (() => {
       const favoriteButton = card.querySelector('.card-fav');
       favoriteButton?.addEventListener('click', async (event) => {
         event.stopPropagation();
-        book.favorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
-        renderLibraryUI();
+        const newFavorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
+        book.favorite = newFavorite;
+        updateFavoriteCard(card, newFavorite);
       });
 
       // Click to open book
@@ -210,6 +211,16 @@ const Library = (() => {
 
       grid.appendChild(card);
     });
+  }
+
+  function updateFavoriteCard(card, isFavorite) {
+    const favBtn = card.querySelector('.card-fav');
+    if (!favBtn) return;
+    favBtn.classList.toggle('visible', isFavorite);
+    favBtn.setAttribute('aria-label', isFavorite ? 'Remove from favorites' : 'Add to favorites');
+    favBtn.setAttribute('title', isFavorite ? 'Remove from favorites' : 'Add to favorites');
+    const svg = favBtn.querySelector('svg');
+    if (svg) svg.setAttribute('fill', isFavorite ? 'currentColor' : 'none');
   }
 
   function sortBooks(books, criterion) {
@@ -278,7 +289,7 @@ const Library = (() => {
       if (window.noveraDesktop?.openFileDialog) {
         const result = await window.noveraDesktop.openFileDialog();
         showImportErrors(result.errors);
-        if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
+        if (!result.canceled && result.files?.length) await processNativeFiles(result.files, null, updateImportProgress);
       } else {
         closeImport();
         fileInput?.click();
@@ -289,11 +300,11 @@ const Library = (() => {
         Utils.toast('Folder import is available in the desktop app', 'info');
         return;
       }
-      setImportStatus('Scanning folder...');
+      updateImportProgress(0, 'Scanning folder...');
       const result = await window.noveraDesktop.openFolderDialog();
       showImportErrors(result.errors);
-      if (!result.canceled && result.files?.length) await processNativeFiles(result.files, setImportStatus, updateImportProgress);
-      else if (!result.canceled) setImportStatus('No EPUB files found in that folder.');
+      if (!result.canceled && result.files?.length) await processNativeFiles(result.files, null, updateImportProgress);
+      else if (!result.canceled) updateImportProgress(0, 'No EPUB files found in that folder.');
     };
 
     [browseBtn, addBtn, addMoreBtn].forEach(btn => {
@@ -386,7 +397,7 @@ const Library = (() => {
     });
   }
 
-  async function processNativeFiles(fileList, setStatus = null, updateProgress = null) {
+  async function processNativeFiles(fileList, _setStatus, updateProgress) {
     Utils.toast(`Importing ${fileList.length} book${fileList.length === 1 ? '' : 's'}...`);
 
     let importedCount = 0;
@@ -396,7 +407,6 @@ const Library = (() => {
       try {
         const completed = Math.round((index / fileList.length) * 100);
         updateProgress?.(completed, `Importing ${index + 1} of ${fileList.length}: ${file.name}`);
-        setStatus?.(`Importing ${index + 1} of ${fileList.length}: ${file.name}`);
         const existing = allBooks.find(book => book.sourcePath === file.path || book.diskPath === file.path);
         if (existing) {
           continue;
@@ -435,7 +445,6 @@ const Library = (() => {
       Utils.toast(`Added ${importedCount} book${importedCount === 1 ? '' : 's'} to library`, 'success');
       await loadAndRenderBooks();
     }
-    setStatus?.('');
   }
 
   async function processFiles(fileList) {
