@@ -51,6 +51,8 @@
       "output": "dist"
     },
     "files": [
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md",
       "main.js",
       "preload.js",
       "scripts/storage-contract.js",
