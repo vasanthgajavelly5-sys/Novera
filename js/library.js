@@ -1055,6 +1055,7 @@ const Library = (() => {
     // Handle submenu item clicks
     const submenu = document.getElementById('ctx-collection-submenu');
     submenu?.addEventListener('click', async (event) => {
+      event.stopPropagation();
       const item = event.target.closest('.ctx-item[data-collection]');
       if (!item || !activeContextBook) return;
 
@@ -1074,10 +1075,12 @@ const Library = (() => {
       await loadAndRenderBooks();
     });
 
-    // Close submenu on outside click
-    window.addEventListener('click', () => {
+    // Close submenu on outside click (but not when clicking inside submenu)
+    window.addEventListener('click', (event) => {
       const submenu = document.getElementById('ctx-collection-submenu');
-      if (submenu) submenu.classList.add('hidden');
+      if (submenu && !submenu.contains(event.target) && event.target.id !== 'ctx-collection') {
+        submenu.classList.add('hidden');
+      }
     });
 
     // Book details modal buttons
