@@ -8,6 +8,7 @@ const App = (() => {
   let currentBookId = null;
   let focusMode = false;
   let nativeFullscreen = false;
+  let libraryZoom = 100;
 
   async function init() {
     // Initialize subsystem managers in parallel (they share a single cached DB
@@ -37,12 +38,27 @@ const App = (() => {
   }
 
   // View Switching
+  function applyLibraryZoom() {
+    const libView = document.getElementById('library-view');
+    if (libView) libView.style.zoom = `${libraryZoom}%`;
+  }
+
+  function adjustLibraryZoom(delta) {
+    const next = Math.min(150, Math.max(75, libraryZoom + delta));
+    if (next === libraryZoom) return;
+    libraryZoom = next;
+    applyLibraryZoom();
+  }
+
   function openLibrary() {
     activeView = 'library';
     closeAllPanels();
 
     const libView = document.getElementById('library-view');
     const readerView = document.getElementById('reader-view');
+
+    libraryZoom = 100;
+    applyLibraryZoom();
 
     if (readerView) {
       readerView.classList.remove('active');
@@ -65,6 +81,8 @@ const App = (() => {
     }
 
     currentBookId = bookId;
+    libraryZoom = 100;
+    applyLibraryZoom();
     activeView = 'reader';
     closeAllPanels();
 
@@ -162,13 +180,17 @@ const App = (() => {
   function bindWindowControls() {
     document.addEventListener('click', (event) => {
       const control = event.target.closest('[data-window-action]');
-      if (!control || !window.noveraDesktop) return;
+      if (!control) return;
 
       const action = control.dataset.windowAction;
+      if (action === 'close-reader') {
+        openLibrary();
+        return;
+      }
+      if (!window.noveraDesktop) return;
       if (action === 'minimize') window.noveraDesktop.minimizeWindow();
       if (action === 'maximize') window.noveraDesktop.maximizeWindow();
       if (action === 'close') window.noveraDesktop.closeWindow();
-      if (action === 'close-reader') openLibrary();
     });
   }
 
@@ -442,6 +464,22 @@ const App = (() => {
           searchInput.focus();
           searchInput.select();
         }
+        return;
+      }
+
+      // Application zoom on the library/home screen. Handle this before the
+      // input guard so Ctrl +/- behaves like a normal desktop zoom shortcut
+      // even when the library search field has focus.
+      if (activeView === 'library' && (e.ctrlKey || e.metaKey) &&
+          (e.code === 'Equal' || e.code === 'NumpadAdd' || e.key === '+')) {
+        e.preventDefault();
+        adjustLibraryZoom(10);
+        return;
+      }
+      if (activeView === 'library' && (e.ctrlKey || e.metaKey) &&
+          (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-')) {
+        e.preventDefault();
+        adjustLibraryZoom(-10);
         return;
       }
 

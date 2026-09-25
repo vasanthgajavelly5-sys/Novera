@@ -184,10 +184,20 @@ const Library = (() => {
 
       const favoriteButton = card.querySelector('.card-fav');
       favoriteButton?.addEventListener('click', async (event) => {
+        event.preventDefault();
         event.stopPropagation();
-        const newFavorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
-        book.favorite = newFavorite;
-        updateFavoriteCard(card, newFavorite);
+        favoriteButton.disabled = true;
+        try {
+          const newFavorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
+          if (newFavorite === null) return;
+          book.favorite = newFavorite;
+          updateFavoriteCard(card, newFavorite);
+        } catch (error) {
+          console.error('Failed to update favorite:', error);
+          Utils.toast('Could not update favorite', 'error');
+        } finally {
+          favoriteButton.disabled = false;
+        }
       });
 
       // Click to open book
@@ -252,7 +262,6 @@ const Library = (() => {
     const dropZone = document.getElementById('drop-zone');
 
     const importModal = document.getElementById('import-modal');
-    const importStatus = document.getElementById('import-status');
     const closeImportBtn = document.getElementById('close-import-btn');
     const importFileBtn = document.getElementById('import-file-btn');
     const importFolderBtn = document.getElementById('import-folder-btn');
@@ -263,7 +272,6 @@ const Library = (() => {
 
     const closeImport = () => importModal?.classList.add('hidden');
     const openImport = () => {
-      if (importStatus) importStatus.textContent = '';
       updateImportProgress(0, '', false);
       importModal?.classList.remove('hidden');
     };
@@ -271,9 +279,6 @@ const Library = (() => {
       if (!errors || errors.length === 0) return;
       const first = errors.slice(0, 3).map(item => `${item.name}: ${item.error}`).join(' | ');
       Utils.toast(`${errors.length} file${errors.length === 1 ? '' : 's'} skipped. ${first}`, 'error');
-    };
-    const setImportStatus = (message) => {
-      if (importStatus) importStatus.textContent = message;
     };
     const updateImportProgress = (percent, label = '', visible = true) => {
       const value = Math.max(0, Math.min(100, Math.round(percent)));

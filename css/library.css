@@ -710,14 +710,30 @@
   left: var(--sp-2);
   color: #FBBF24;
   filter: drop-shadow(0 1px 4px rgba(0,0,0,0.4));
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
   z-index: 2;
   border: 0;
   background: transparent;
   padding: 4px;
   cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-io), visibility 0s linear var(--dur-fast);
 }
-.card-fav.visible, .book-card:hover .card-fav { display: flex; }
+.card-fav.visible,
+.book-card:hover .card-fav {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.card-fav:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .card-badge-warning { background: var(--status-warning); color: #11151B; }
 
 /* Card meta */

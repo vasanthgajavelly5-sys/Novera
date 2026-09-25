@@ -675,12 +675,7 @@
 .import-option small { display: block; }
 .import-option strong { font-size: 1rem; }
 .import-option small { margin-top: 5px; color: var(--text-tertiary); line-height: 1.4; }
-.import-status {
-  min-height: 22px;
-  padding: 0 var(--sp-6) var(--sp-5);
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-}
+.import-status { display: none; }
 .import-progress {
   padding: 0 var(--sp-6) var(--sp-5);
 }
@@ -965,6 +960,22 @@
 .app-theme-switch[data-state="dark"] .app-theme-icon-moon { opacity: 1; }
 .app-theme-switch[data-state="light"] .app-theme-icon-sun { opacity: 1; }
 .app-theme-switch[data-state="light"] .app-theme-icon-moon { opacity: 0.45; }
+
+
+/* Enabled collection action — visually distinct from passive glass controls. */
+.collection-create-trigger {
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.collection-create-trigger:hover,
+.collection-create-trigger:focus-visible {
+  color: var(--text-on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
 
 /* ── Zoom Overlay ─────────────────────────────────────────── */
 .zoom-overlay {

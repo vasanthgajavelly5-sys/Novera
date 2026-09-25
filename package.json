@@ -100,7 +100,8 @@
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico",
       "installerHeaderIcon": "assets/icon.ico",
-      "license": "LICENSE"
+      "license": "LICENSE",
+      "include": "scripts/nsis-include.nsh"
     }
   },
   "dependencies": {
