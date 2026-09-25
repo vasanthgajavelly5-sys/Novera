@@ -297,6 +297,104 @@ const App = (() => {
         switchFullSettingsSection(section);
       });
     });
+
+    // Full Settings - Appearance section bindings
+    bindFullSettingsAppearance();
+  }
+
+  function bindFullSettingsAppearance() {
+    // Application theme radio buttons
+    document.querySelectorAll('[data-app-theme]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof ThemeManager !== 'undefined') {
+          ThemeManager.setAppTheme(btn.dataset.appTheme);
+        }
+      });
+    });
+
+    // Accent color input
+    const accentInput = document.getElementById('full-app-accent-color');
+    if (accentInput) {
+      accentInput.addEventListener('input', (e) => {
+        if (typeof ThemeManager !== 'undefined') {
+          ThemeManager.applyAccent(e.target.value);
+        }
+      });
+    }
+
+    // Reset accent button
+    const resetAccentBtn = document.getElementById('full-reset-accent-btn');
+    if (resetAccentBtn && typeof ThemeManager !== 'undefined') {
+      resetAccentBtn.addEventListener('click', () => {
+        ThemeManager.applyAccent(ThemeManager.DEFAULT_ACCENT);
+      });
+    }
+
+    // Reader theme presets
+    document.querySelectorAll('#appearance-panel .theme-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof ThemeManager !== 'undefined') {
+          ThemeManager.setReaderTheme(btn.dataset.theme);
+        }
+      });
+    });
+
+    // Custom theme color inputs
+    document.querySelectorAll('#appearance-panel [data-custom-color]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        if (typeof ThemeManager !== 'undefined') {
+          ThemeManager.setCustomColor(e.target.dataset.customColor, e.target.value);
+        }
+      });
+    });
+
+    // Reset custom theme button
+    const resetCustomBtn = document.getElementById('full-reset-custom-theme-btn');
+    if (resetCustomBtn && typeof ThemeManager !== 'undefined') {
+      resetCustomBtn.addEventListener('click', () => {
+        ThemeManager.resetCustomTheme();
+      });
+    }
+
+    // Sync UI when Full Settings Appearance panel is opened
+    const appearanceNavBtn = document.querySelector('[data-section="appearance"]');
+    if (appearanceNavBtn) {
+      appearanceNavBtn.addEventListener('click', syncFullSettingsAppearanceUI);
+    }
+  }
+
+  function syncFullSettingsAppearanceUI() {
+    if (typeof ThemeManager === 'undefined') return;
+
+    // Sync app theme radios
+    const appTheme = ThemeManager.getAppTheme();
+    document.querySelectorAll('[data-app-theme]').forEach(btn => {
+      const isActive = btn.dataset.appTheme === appTheme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    // Sync accent color input
+    const accentInput = document.getElementById('full-app-accent-color');
+    if (accentInput) {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      if (accent) accentInput.value = accent;
+    }
+
+    // Sync reader theme presets
+    const readerTheme = ThemeManager.getReaderTheme();
+    document.querySelectorAll('#appearance-panel .theme-preset').forEach(btn => {
+      const isActive = btn.dataset.theme === readerTheme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    // Sync custom theme inputs
+    const colors = ThemeManager.getThemeColors(readerTheme);
+    document.querySelectorAll('#appearance-panel [data-custom-color]').forEach(input => {
+      const key = input.dataset.customColor;
+      if (colors[key]) input.value = colors[key];
+    });
   }
 
   function toggleDrawer(panel) {
