@@ -122,6 +122,29 @@
   border-color: var(--border-default);
 }
 
+/* Collection create button - matches glass-select appearance */
+.collection-create-trigger {
+  height: 36px;
+  min-width: 168px;
+  padding: 0 32px 0 var(--sp-3);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs), var(--shadow-inset);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+}
+.collection-create-trigger:hover,
+.collection-create-trigger:focus {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+.collection-create-trigger:focus {
+  box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-xs);
+  outline: 0;
+}
+
 /* ── Navigation controls ───────────────────────────────── */
 .glass-input {
   display: flex;
