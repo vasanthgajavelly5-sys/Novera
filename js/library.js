@@ -209,89 +209,138 @@ const Library = (() => {
     });
   }
 
+  let renderBatchTimer = null;
+let renderBatchIndex = 0;
+const RENDER_BATCH_SIZE = 50;
+
   function renderBookCards(books) {
     const grid = document.getElementById('books-grid');
     if (!grid) return;
     grid.innerHTML = '';
     grid.className = isListView ? 'books-grid list-view visible' : 'books-grid visible';
 
-    books.forEach(book => {
-      const card = document.createElement('div');
-      card.className = 'book-card';
-      card.dataset.bookId = book.id;
-      card.setAttribute('role', 'listitem');
-      card.setAttribute('tabindex', '0');
+    // For large libraries in grid view, render in batches to avoid blocking the main thread
+    if (books.length > RENDER_BATCH_SIZE && !isListView) {
+      renderBatchIndex = 0;
+      renderBatch(grid, books);
+    } else {
+      renderAllBooks(grid, books);
+    }
+  }
 
-      const pct = book.progressPercent || 0;
-      const unavailable = book.availability === 'unavailable';
+  function renderBatch(grid, books) {
+    const start = renderBatchIndex;
+    const end = Math.min(start + RENDER_BATCH_SIZE, books.length);
+    const fragment = document.createDocumentFragment();
 
-      const coverHtml = book.coverDataUrl
-        ? `<img src="${book.coverDataUrl}" alt="${Utils.escapeHTML(book.title)}" class="card-cover" loading="lazy">`
-        : `<div class="card-cover-fallback">
-             <svg class="card-fallback-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-             <span class="card-fallback-title">${Utils.escapeHTML(book.title)}</span>
-           </div>`;
+    for (let i = start; i < end; i++) {
+      fragment.appendChild(createBookCard(books[i]));
+    }
+    grid.appendChild(fragment);
+    renderBatchIndex = end;
 
-      card.innerHTML = `
-        <div class="card-cover-wrap">
-          ${coverHtml}
-          ${unavailable ? '<div class="card-badge card-badge-warning">File unavailable</div>' : ''}
-            <button class="card-fav ${book.favorite ? 'visible' : ''}" type="button" aria-label="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}" title="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${book.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 8.8c0 5.5-8.8 10.2-8.8 10.2S3.2 14.3 3.2 8.8A4.6 4.6 0 0 1 12 6.1a4.6 4.6 0 0 1 8.8 2.7Z"/></svg>
-            </button>
-          ${pct > 0 ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width:${pct}%"></div></div>` : ''}
-          ${pct >= 100 ? `<div class="card-badge">Completed</div>` : (pct > 0 ? `<div class="card-badge">${pct}%</div>` : '')}
-        </div>
-        <div class="card-meta">
-          <div class="card-title" title="${Utils.escapeHTML(book.title)}">${Utils.escapeHTML(book.title)}</div>
-          <div class="card-author">${Utils.escapeHTML(book.author || 'Unknown')}</div>
-        </div>
-        ${isListView ? `<div class="card-chapter-count ${Number.isFinite(Number(book.chapterCount)) ? '' : 'is-loading'}">${Number.isFinite(Number(book.chapterCount)) ? `${book.chapterCount} chapter${Number(book.chapterCount) === 1 ? '' : 's'}` : 'Chapters'}</div>` : ''}
-      `;
+    if (end < books.length) {
+      renderBatchTimer = requestAnimationFrame(() => renderBatch(grid, books));
+    } else if (isListView) {
+      observeMissingChapterCounts(books, grid);
+    }
+  }
 
-      const favoriteButton = card.querySelector('.card-fav');
-      favoriteButton?.addEventListener('click', async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        favoriteButton.disabled = true;
-        try {
-          const newFavorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
-          if (newFavorite === null) return;
-          book.favorite = newFavorite;
-          updateFavoriteCard(card, newFavorite);
-        } catch (error) {
-          console.error('Failed to update favorite:', error);
-          Utils.toast('Could not update favorite', 'error');
-        } finally {
-          favoriteButton.disabled = false;
-        }
-      });
+  function renderAllBooks(grid, books) {
+    const fragment = document.createDocumentFragment();
+    books.forEach(book => fragment.appendChild(createBookCard(book)));
+    grid.appendChild(fragment);
+    if (isListView) {
+      observeMissingChapterCounts(books, grid);
+    }
+  }
 
-      // Click to open book
-      card.addEventListener('click', (e) => {
-        App.openReader(book.id);
-      });
+  function createBookCard(book) {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.dataset.bookId = book.id;
+    card.setAttribute('role', 'listitem');
+    card.setAttribute('tabindex', '0');
 
-      // Context menu on right click
-      card.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        openContextMenu(e.clientX, e.clientY, book);
-      });
+    const pct = book.progressPercent || 0;
+    const unavailable = book.availability === 'unavailable';
 
-      // Keyboard support
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          App.openReader(book.id);
-        }
-      });
+    const coverHtml = book.coverDataUrl
+      ? `<img src="${book.coverDataUrl}" alt="${Utils.escapeHTML(book.title)}" class="card-cover" loading="lazy">`
+      : `<div class="card-cover-fallback">
+           <svg class="card-fallback-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+           <span class="card-fallback-title">${Utils.escapeHTML(book.title)}</span>
+         </div>`;
 
-      grid.appendChild(card);
+    card.innerHTML = `
+      <div class="card-cover-wrap">
+        ${coverHtml}
+        ${unavailable ? '<div class="card-badge card-badge-warning">File unavailable</div>' : ''}
+          <button class="card-fav ${book.favorite ? 'visible' : ''}" type="button" aria-label="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}" title="${book.favorite ? 'Remove from favorites' : 'Add to favorites'}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${book.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 8.8c0 5.5-8.8 10.2-8.8 10.2S3.2 14.3 3.2 8.8A4.6 4.6 0 0 1 12 6.1a4.6 4.6 0 0 1 8.8 2.7Z"/></svg>
+          </button>
+        ${pct > 0 ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width:${pct}%"></div></div>` : ''}
+        ${pct >= 100 ? `<div class="card-badge">Completed</div>` : (pct > 0 ? `<div class="card-badge">${pct}%</div>` : '')}
+      </div>
+      <div class="card-meta">
+        <div class="card-title" title="${Utils.escapeHTML(book.title)}">${Utils.escapeHTML(book.title)}</div>
+        <div class="card-author">${Utils.escapeHTML(book.author || 'Unknown')}</div>
+      </div>
+      ${isListView ? `<div class="card-chapter-count ${Number.isFinite(Number(book.chapterCount)) ? '' : 'is-loading'}">${Number.isFinite(Number(book.chapterCount)) ? `${book.chapterCount} chapter${Number(book.chapterCount) === 1 ? '' : 's'}` : 'Chapters'}</div>` : ''}
+    `;
+
+    const favoriteButton = card.querySelector('.card-fav');
+    favoriteButton?.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      favoriteButton.disabled = true;
+      try {
+        const newFavorite = await NoveraDB.updateFavorite(book.id, !book.favorite);
+        if (newFavorite === null) return;
+        book.favorite = newFavorite;
+        updateFavoriteCard(card, newFavorite);
+      } catch (error) {
+        console.error('Failed to update favorite:', error);
+        Utils.toast('Could not update favorite', 'error');
+      } finally {
+        favoriteButton.disabled = false;
+      }
     });
 
-    if (isListView) {
-      // Only calculate missing counts as rows approach the viewport. This keeps large libraries responsive.
-      observeMissingChapterCounts(books, grid);
+    // Click to open book
+    card.addEventListener('click', (e) => {
+      App.openReader(book.id);
+    });
+
+    // Context menu on right click
+    card.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openContextMenu(e.clientX, e.clientY, book);
+    });
+
+    // Keyboard support
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        App.openReader(book.id);
+      }
+    });
+
+    return card;
+  }
+
+  function renderBookCards(books) {
+    const grid = document.getElementById('books-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    grid.className = isListView ? 'books-grid list-view visible' : 'books-grid visible';
+
+    // For large libraries in grid view, render in batches to avoid blocking the main thread
+    if (books.length > RENDER_BATCH_SIZE && !isListView) {
+      renderBatchIndex = 0;
+      renderBatch(grid, books);
+    } else {
+      renderAllBooks(grid, books);
     }
   }
 
