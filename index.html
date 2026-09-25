@@ -285,8 +285,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
         </button>
 
-        <button class="btn btn-glass icon-btn focus-settings-btn" id="focus-settings-btn" title="Reading settings" aria-label="Open reading settings">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 19.65 7l-.06.06A1.65 1.65 0 0 0 19.4 9c.24.61.82 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-.69 0-1.27.39-1.51 1Z"/></svg>
+<button class="btn btn-glass icon-btn focus-settings-btn" id="focus-settings-btn" title="Reading settings" aria-label="Open reading settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 19.65 7l-.06.06A1.65 1.65 0 0 0 19.4 9c.24.61.82 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-.69 0-1.27.39-1.51 1Z"/></svg>
         </button>
 
         <div class="window-controls" aria-label="Window controls">
@@ -296,13 +296,20 @@
           <button class="window-control" data-window-action="maximize" title="Maximize" aria-label="Maximize window">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="1"/></svg>
           </button>
-          <button class="window-control window-control-close" data-window-action="close" title="Close" aria-label="Close window">
+          <button class="window-control window-control-close" data-window-action="close-reader" title="Close Reader" aria-label="Close reader and return to library">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
           </button>
         </div>
 
       </div>
     </header>
+
+    <!-- Temporary Zoom Overlay -->
+    <div id="zoom-overlay" class="zoom-overlay hidden" role="status" aria-live="polite" aria-label="Zoom level">
+      <button class="zoom-btn" id="zoom-out-btn" aria-label="Zoom out" title="Zoom out (Ctrl+-)">−</button>
+      <span id="zoom-overlay-value">100%</span>
+      <button class="zoom-btn" id="zoom-in-btn" aria-label="Zoom in" title="Zoom in (Ctrl++)">+</button>
+    </div>
 
     <!-- Reading Progress Stripe -->
     <div id="reading-stripe" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Reading progress">
@@ -692,6 +699,30 @@
             <button class="btn btn-accent" id="details-read-btn">Read Now</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Collection Modal -->
+  <div id="collection-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="collection-modal-title">
+    <div class="modal-box collection-modal-box">
+      <div class="modal-header">
+        <div>
+          <h2 id="collection-modal-title">New collection</h2>
+          <p class="modal-subtitle">Give your collection a name.</p>
+        </div>
+        <button class="btn btn-glass icon-btn" id="close-collection-btn" type="button" aria-label="Close collection dialog">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body collection-modal-body">
+        <label class="collection-input-label" for="collection-name-input">Collection name</label>
+        <input id="collection-name-input" class="glass-input collection-name-input" type="text" maxlength="80" autocomplete="off" placeholder="e.g. To Read">
+        <p id="collection-name-error" class="collection-name-error" role="alert" hidden></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-collection-btn" type="button">Cancel</button>
+        <button class="btn btn-accent" id="save-collection-btn" type="button">Create collection</button>
       </div>
     </div>
   </div>

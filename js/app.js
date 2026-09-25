@@ -168,6 +168,7 @@ const App = (() => {
       if (action === 'minimize') window.noveraDesktop.minimizeWindow();
       if (action === 'maximize') window.noveraDesktop.maximizeWindow();
       if (action === 'close') window.noveraDesktop.closeWindow();
+      if (action === 'close-reader') openLibrary();
     });
   }
 
@@ -295,6 +296,7 @@ const App = (() => {
     document.getElementById('shortcuts-modal')?.classList.add('hidden');
     document.getElementById('book-details-modal')?.classList.add('hidden');
     document.getElementById('note-modal')?.classList.add('hidden');
+    document.getElementById('collection-modal')?.classList.add('hidden');
   }
 
   function bindSelectionToolbar() {
@@ -418,6 +420,20 @@ const App = (() => {
         }
       }
 
+      // Reader search shortcut: Ctrl+F must take precedence over the
+      // generic input guard and the plain F fullscreen shortcut.
+      if (activeView === 'reader' && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        const searchOverlay = document.getElementById('search-overlay');
+        if (searchOverlay) {
+          searchOverlay.classList.add('visible');
+          const searchInput = document.getElementById('search-input');
+          searchInput?.focus();
+          searchInput?.select();
+        }
+        return;
+      }
+
       // Library search shortcut: Ctrl+K
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -433,7 +449,15 @@ const App = (() => {
 
       // Reader shortcuts
       if (activeView === 'reader') {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key.toLowerCase() === 'j' || (e.key === ' ' && !e.shiftKey)) {
+        // Zoom shortcuts. Use event.code as the stable keyboard source so
+        // Ctrl+=, Ctrl++ and numpad + / - all reach the same runtime zoom.
+        if ((e.ctrlKey || e.metaKey) && (e.code === 'Equal' || e.code === 'NumpadAdd' || e.key === '+')) {
+          e.preventDefault();
+          ReaderSettings.adjustZoom(10);
+        } else if ((e.ctrlKey || e.metaKey) && (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-')) {
+          e.preventDefault();
+          ReaderSettings.adjustZoom(-10);
+        } else if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key.toLowerCase() === 'j' || (e.key === ' ' && !e.shiftKey)) {
           if (!e.shiftKey) {
             e.preventDefault();
             EpubLoader.next();

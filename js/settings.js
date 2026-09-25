@@ -9,12 +9,15 @@ const ReaderSettings = (() => {
     alignment: 'left',
     lineHeight: 1.6,
     margin: 10,
-    flow: 'paginated', // 'paginated' | 'scrolled'
-    spread: 'auto'     // 'auto' | 'none'
+    flow: 'paginated',
+    spread: 'auto'
   };
 
   let currentSettings = { ...DEFAULT_SETTINGS };
+  let currentZoom = 100;
   let persistTimer = null;
+  let zoomChangeTimer = null;
+  let zoomOverlayVisible = false;
 
   function normalizeSettings(settings) {
     const merged = { ...DEFAULT_SETTINGS, ...settings };
@@ -34,13 +37,14 @@ const ReaderSettings = (() => {
     currentSettings = normalizeSettings(saved);
     updateUI();
     bindEvents();
+    bindZoomEvents();
   }
 
   function getSettings() {
-    return currentSettings;
+    return { ...currentSettings, zoom: currentZoom };
   }
 
-  function updateUI() {
+function updateUI() {
     // Font size display
     const fontSizeDisplay = document.getElementById('font-size-display');
     if (fontSizeDisplay) fontSizeDisplay.textContent = `${currentSettings.fontSize}px`;
@@ -68,6 +72,10 @@ const ReaderSettings = (() => {
     if (marginSlider) marginSlider.value = currentSettings.margin;
     if (marginVal) marginVal.textContent = `${currentSettings.margin}%`;
 
+    // Zoom display (runtime only)
+    const zoomDisplay = document.getElementById('zoom-display');
+    if (zoomDisplay) zoomDisplay.textContent = `${currentZoom}%`;
+
     // Flow buttons
     const flowPaginated = document.getElementById('flow-paginated-btn');
     const flowScrolled = document.getElementById('flow-scrolled-btn');
@@ -79,7 +87,6 @@ const ReaderSettings = (() => {
     const spreadSingle = document.getElementById('spread-single-btn');
     if (spreadAuto) spreadAuto.classList.toggle('active', currentSettings.spread === 'auto');
     if (spreadSingle) spreadSingle.classList.toggle('active', currentSettings.spread === 'none');
-
   }
 
   function setSetting(key, val, shouldApply = true) {
@@ -90,7 +97,70 @@ const ReaderSettings = (() => {
     updateUI();
 
     if (shouldApply && typeof EpubLoader !== 'undefined') {
-      EpubLoader.applySettings(currentSettings);
+      EpubLoader.applySettings({ ...currentSettings, zoom: currentZoom });
+    }
+  }
+
+  function adjustZoom(delta) {
+    const newZoom = Math.min(200, Math.max(50, currentZoom + delta));
+    if (newZoom !== currentZoom) {
+      currentZoom = newZoom;
+      updateUI();
+      if (typeof EpubLoader !== 'undefined') {
+        EpubLoader.applySettings({ ...currentSettings, zoom: currentZoom });
+      }
+      showZoomOverlay();
+    }
+  }
+
+  function setZoom(zoom) {
+    const newZoom = Math.min(200, Math.max(50, zoom));
+    if (newZoom !== currentZoom) {
+      currentZoom = newZoom;
+      updateUI();
+      if (typeof EpubLoader !== 'undefined') {
+        EpubLoader.applySettings({ ...currentSettings, zoom: currentZoom });
+      }
+      showZoomOverlay();
+    }
+  }
+
+  function showZoomOverlay() {
+    const overlay = document.getElementById('zoom-overlay');
+    if (!overlay) return;
+    const zoomDisplay = document.getElementById('zoom-overlay-value');
+    if (zoomDisplay) zoomDisplay.textContent = `${currentZoom}%`;
+    overlay.classList.add('visible');
+    zoomOverlayVisible = true;
+    clearTimeout(zoomChangeTimer);
+    zoomChangeTimer = setTimeout(() => {
+      overlay.classList.remove('visible');
+      zoomOverlayVisible = false;
+    }, 2000);
+  }
+
+  function bindZoomEvents() {
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => adjustZoom(-10));
+    }
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => adjustZoom(10));
+    }
+
+    const overlay = document.getElementById('zoom-overlay');
+    if (overlay) {
+      overlay.addEventListener('pointerenter', () => {
+        clearTimeout(zoomChangeTimer);
+      });
+      overlay.addEventListener('pointerleave', () => {
+        clearTimeout(zoomChangeTimer);
+        zoomChangeTimer = setTimeout(() => {
+          overlay.classList.remove('visible');
+          zoomOverlayVisible = false;
+        }, 1200);
+      });
     }
   }
 
@@ -208,6 +278,11 @@ const ReaderSettings = (() => {
   return {
     init,
     getSettings,
-    setSetting
+    setSetting,
+    adjustZoom,
+    setZoom,
+    showZoomOverlay,
+    getZoom: () => currentZoom,
+    setZoomDirect: (val) => { currentZoom = Math.min(200, Math.max(50, val)); }
   };
 })();

@@ -657,7 +657,35 @@ const Library = (() => {
       currentCollection = event.target.value;
       renderLibraryUI();
     });
-    newCollectionButton?.addEventListener('click', createCollection);
+    newCollectionButton?.addEventListener('click', openCollectionModal);
+
+    const collectionModal = document.getElementById('collection-modal');
+    const collectionInput = document.getElementById('collection-name-input');
+    const saveCollectionBtn = document.getElementById('save-collection-btn');
+    const closeCollectionBtn = document.getElementById('close-collection-btn');
+    const cancelCollectionBtn = document.getElementById('cancel-collection-btn');
+
+    const closeCollectionModal = () => {
+      collectionModal?.classList.add('hidden');
+      if (collectionInput) collectionInput.value = '';
+      clearCollectionError();
+    };
+
+    closeCollectionBtn?.addEventListener('click', closeCollectionModal);
+    cancelCollectionBtn?.addEventListener('click', closeCollectionModal);
+    collectionModal?.addEventListener('click', event => {
+      if (event.target === collectionModal) closeCollectionModal();
+    });
+    saveCollectionBtn?.addEventListener('click', () => createCollection(closeCollectionModal));
+    collectionInput?.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        createCollection(closeCollectionModal);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeCollectionModal();
+      }
+    });
   }
 
   function renderCollectionOptions() {
@@ -670,22 +698,74 @@ const Library = (() => {
     select.value = currentCollection;
   }
 
-  async function createCollection() {
-    const name = window.prompt('Collection name');
-    const trimmed = name?.trim();
-    if (!trimmed) return;
-    if (collections.some(collection => collection.name.toLowerCase() === trimmed.toLowerCase())) {
-      Utils.toast('A collection with that name already exists', 'error');
+  function clearCollectionError() {
+    const error = document.getElementById('collection-name-error');
+    if (error) {
+      error.hidden = true;
+      error.textContent = '';
+    }
+  }
+
+  function showCollectionError(message) {
+    const error = document.getElementById('collection-name-error');
+    if (error) {
+      error.hidden = false;
+      error.textContent = message;
+    }
+  }
+
+  function openCollectionModal() {
+    const modal = document.getElementById('collection-modal');
+    const input = document.getElementById('collection-name-input');
+    if (!modal || !input) return;
+
+    clearCollectionError();
+    input.value = '';
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      input.focus();
+    });
+  }
+
+  async function createCollection(closeModal) {
+    const input = document.getElementById('collection-name-input');
+    const trimmed = input?.value.trim() || '';
+    if (!trimmed) {
+      showCollectionError('Enter a collection name.');
+      input?.focus();
       return;
     }
-    const collection = { id: Utils.generateId(), name: trimmed, dateCreated: Date.now() };
-    await NoveraDB.saveCollection(collection);
-    collections.push(collection);
-    renderCollectionOptions();
-    currentCollection = collection.id;
-    const select = document.getElementById('collection-select');
-    if (select) select.value = currentCollection;
-    renderLibraryUI();
+
+    if (collections.some(collection => collection.name.toLowerCase() === trimmed.toLowerCase())) {
+      showCollectionError('A collection with that name already exists.');
+      input?.focus();
+      input?.select();
+      return;
+    }
+
+    const saveButton = document.getElementById('save-collection-btn');
+    if (saveButton) saveButton.disabled = true;
+
+    try {
+      const collection = {
+        id: Utils.generateId(),
+        name: trimmed,
+        dateCreated: Date.now()
+      };
+      await NoveraDB.saveCollection(collection);
+      collections.push(collection);
+      renderCollectionOptions();
+      currentCollection = collection.id;
+      const select = document.getElementById('collection-select');
+      if (select) select.value = currentCollection;
+      renderLibraryUI();
+      closeModal?.();
+    } catch (error) {
+      console.error('Collection creation failed:', error);
+      showCollectionError('Could not create the collection. Please try again.');
+    } finally {
+      if (saveButton) saveButton.disabled = false;
+    }
   }
 
   async function checkIntegrity() {

@@ -68,6 +68,12 @@ const EpubLoader = (() => {
 
       const settings = ReaderSettings.getSettings();
 
+      // Keep the reader viewport aware of the active epub.js flow. This lets
+      // keyboard scrolling target the EPUB document rather than the outer app.
+      if (container) {
+        container.classList.toggle('flow-scrolled', settings.flow === 'scrolled');
+      }
+
       // Render book into container
       rendition = currentBook.renderTo('epub-container', {
         width: '100%',
@@ -96,8 +102,8 @@ const EpubLoader = (() => {
       // Extract TOC navigation
       loadTableOfContents();
 
-      // Apply active theme and settings to rendition (full inject)
-      applyTheme(ThemeManager.getReaderTheme());
+      // Apply active theme/settings in one pass after the first rendition
+      // has been displayed.
       applySettings(settings);
 
       // Load and render existing annotations
@@ -199,7 +205,7 @@ const EpubLoader = (() => {
 
     const fontFam = settings.fontFamily === 'Original' ? 'inherit' : `'${settings.fontFamily}', Georgia, serif`;
     const headingFam = settings.fontFamily === 'Playfair Display' ? "'Playfair Display', Georgia, serif" : fontFam;
-    const fontSize = settings.fontSize || 18;
+    const fontSize = Math.round((settings.fontSize || 18) * (settings.zoom || 100) / 100);
     const alignment = settings.alignment || 'left';
     const lineHeight = settings.lineHeight || 1.6;
     const margin = settings.margin ? `${settings.margin * 3}px` : '30px';
@@ -500,11 +506,10 @@ const EpubLoader = (() => {
   }
 
   function scheduleLiveStyleRefresh() {
+    // Theme/settings changes must be applied once. Rewriting every EPUB
+    // iframe on multiple animation/timer passes causes the visible
+    // top-to-bottom repaint/wipe effect.
     applyStylesToAllContents();
-    requestAnimationFrame(() => {
-      applyStylesToAllContents();
-      setTimeout(applyStylesToAllContents, 80);
-    });
   }
 
    function registerDefaultTheme() {
@@ -540,7 +545,8 @@ const EpubLoader = (() => {
     if (!rendition) return;
 
     if (settings.fontSize) {
-      rendition.themes.fontSize(`${settings.fontSize}px`);
+      const effectiveFontSize = Math.round(settings.fontSize * (settings.zoom || 100) / 100);
+      rendition.themes.fontSize(`${effectiveFontSize}px`);
     }
 
     if (settings.fontFamily) {
@@ -580,16 +586,38 @@ const EpubLoader = (() => {
 
   function scrollBy(dx, dy) {
     if (!rendition) return;
+
     const settings = ReaderSettings.getSettings();
-    if (settings.flow === 'scrolled') {
-      const iframe = document.querySelector('#epub-container iframe');
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.scrollBy(dx, dy);
-      }
-    } else {
-      // In paginated mode, fall back to page navigation
+    if (settings.flow !== 'scrolled') {
+      // Paginated mode has no vertical document scroll position; use the
+      // existing page navigation semantics.
       if (dy < 0) prev();
       else if (dy > 0) next();
+      return;
+    }
+
+    const iframe = document.querySelector('#epub-container iframe');
+    const doc = iframe?.contentDocument;
+    const win = iframe?.contentWindow;
+    if (!iframe || !doc || !win) return;
+
+    // epub.js owns the EPUB document inside the iframe. Scroll that document
+    // directly instead of scrolling the Electron reader shell.
+    const scrollingElement = doc.scrollingElement || doc.documentElement || doc.body;
+    if (scrollingElement) {
+      const before = scrollingElement.scrollTop;
+      scrollingElement.scrollTop = before + dy;
+      if (scrollingElement.scrollTop !== before) return;
+    }
+
+    // Some EPUBs expose the scroll position through the iframe window.
+    const beforeY = win.scrollY;
+    win.scrollBy({ left: dx, top: dy, behavior: 'auto' });
+    if (win.scrollY !== beforeY) return;
+
+    // Final fallback for EPUB documents whose body owns the scroll box.
+    if (doc.body) {
+      doc.body.scrollTop = Math.max(0, doc.body.scrollTop + dy);
     }
   }
 
