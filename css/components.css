@@ -552,6 +552,28 @@
   margin: var(--sp-1);
 }
 
+/* Context Submenu */
+.ctx-submenu {
+  position: fixed;
+  z-index: calc(var(--z-modal) + 11);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--sp-1);
+  min-width: 180px;
+  animation: ctxIn var(--dur-fast) var(--ease-out);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+}
+.ctx-submenu .ctx-item {
+  padding: 8px var(--sp-3);
+  font-size: 0.8125rem;
+}
+.ctx-submenu .ctx-separator {
+  margin: 4px var(--sp-1);
+}
+
 /* ── Modal ───────────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed;

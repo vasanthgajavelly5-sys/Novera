@@ -707,7 +707,6 @@ const Library = (() => {
     const sortSelect = document.getElementById('sort-select');
     const filterSelect = document.getElementById('filter-select');
     const collectionSelect = document.getElementById('collection-select');
-    const newCollectionButton = document.getElementById('new-collection-btn');
     const viewToggle = document.getElementById('view-toggle-btn');
 
     if (searchInput) {
@@ -748,10 +747,15 @@ const Library = (() => {
     }
 
     collectionSelect?.addEventListener('change', event => {
-      currentCollection = event.target.value;
+      const value = event.target.value;
+      if (value === '__new__') {
+        event.target.value = currentCollection;
+        openCollectionModal();
+        return;
+      }
+      currentCollection = value;
       renderLibraryUI();
     });
-    newCollectionButton?.addEventListener('click', openCollectionModal);
 
     const collectionModal = document.getElementById('collection-modal');
     const collectionInput = document.getElementById('collection-name-input');
@@ -785,7 +789,10 @@ const Library = (() => {
   function renderCollectionOptions() {
     const select = document.getElementById('collection-select');
     if (!select) return;
-    select.replaceChildren(new Option('All collections', 'all'));
+    select.replaceChildren(
+      new Option('All collections', 'all'),
+      new Option('+ New collection…', '__new__')
+    );
     collections.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(collection => {
       select.appendChild(new Option(collection.name, collection.id));
     });
@@ -1006,18 +1013,71 @@ const Library = (() => {
       });
     }
 
-    ctxCollection?.addEventListener('click', async () => {
-      if (!activeContextBook || collections.length === 0) {
-        Utils.toast('Create a collection first', 'info');
+    ctxCollection?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const submenu = document.getElementById('ctx-collection-submenu');
+      if (!submenu) return;
+      if (!activeContextBook) return;
+
+      // Populate submenu with collections
+      const separator = submenu.querySelector('.ctx-sep');
+      submenu.querySelectorAll('.ctx-item[data-collection]').forEach(el => el.remove());
+
+      if (collections.length === 0) {
+        const newItem = document.createElement('div');
+        newItem.className = 'ctx-item';
+        newItem.dataset.collection = '__new__';
+        newItem.textContent = '+ New collection…';
+        submenu.insertBefore(newItem, separator);
+      } else {
+        collections.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(collection => {
+          const item = document.createElement('div');
+          item.className = 'ctx-item';
+          item.dataset.collection = collection.id;
+          const isIncluded = activeContextBook.collectionIds?.includes(collection.id);
+          item.textContent = `${isIncluded ? '✓ ' : ''}${collection.name}`;
+          submenu.insertBefore(item, separator);
+        });
+        const newItem = document.createElement('div');
+        newItem.className = 'ctx-item';
+        newItem.dataset.collection = '__new__';
+        newItem.textContent = '+ New collection…';
+        submenu.insertBefore(newItem, separator);
+      }
+
+      // Position submenu to the right of parent
+      const rect = event.currentTarget.getBoundingClientRect();
+      submenu.style.left = `${rect.right + 4}px`;
+      submenu.style.top = `${rect.top}px`;
+      submenu.classList.remove('hidden');
+    });
+
+    // Handle submenu item clicks
+    const submenu = document.getElementById('ctx-collection-submenu');
+    submenu?.addEventListener('click', async (event) => {
+      const item = event.target.closest('.ctx-item[data-collection]');
+      if (!item || !activeContextBook) return;
+
+      const collectionId = item.dataset.collection;
+      submenu.classList.add('hidden');
+
+      if (collectionId === '__new__') {
+        openCollectionModal();
         return;
       }
-      const choices = collections.map((collection, index) => `${index + 1}. ${collection.name}`).join('\n');
-      const selected = Number(window.prompt(`Add "${activeContextBook.title}" to which collection?\n${choices}`));
-      const collection = collections[selected - 1];
+
+      const collection = collections.find(c => c.id === collectionId);
       if (!collection) return;
+
       const included = !activeContextBook.collectionIds?.includes(collection.id);
       activeContextBook.collectionIds = await NoveraDB.setBookCollection(activeContextBook.id, collection.id, included);
       await loadAndRenderBooks();
+    });
+
+    // Close submenu on outside click
+    window.addEventListener('click', () => {
+      const submenu = document.getElementById('ctx-collection-submenu');
+      if (submenu) submenu.classList.add('hidden');
     });
 
     // Book details modal buttons

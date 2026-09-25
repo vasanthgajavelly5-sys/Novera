@@ -132,8 +132,8 @@
           </select>
           <select id="collection-select" class="glass-select" aria-label="Filter by collection">
             <option value="all">All collections</option>
+            <option value="__new__">+ New collection…</option>
           </select>
-          <button class="btn btn-glass btn-sm collection-create-trigger" id="new-collection-btn" type="button">New collection</button>
           <select id="sort-select" class="glass-select" aria-label="Sort books by">
             <option value="recent">Recently Read</option>
             <option value="added">Recently Added</option>
@@ -832,6 +832,11 @@
     </div>
     <div class="ctx-item" id="ctx-collection" role="menuitem">
       <span>Add to collection</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div id="ctx-collection-submenu" class="ctx-submenu hidden" role="menu" aria-label="Collection actions">
+      <div class="ctx-item" data-collection="__new__" role="menuitem">+ New collection…</div>
+      <div class="ctx-sep" role="separator"></div>
     </div>
     <div class="ctx-sep" role="separator"></div>
     <div class="ctx-item danger" id="ctx-delete" role="menuitem">
