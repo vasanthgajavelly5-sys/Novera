@@ -300,6 +300,9 @@ const App = (() => {
 
     // Full Settings - Appearance section bindings
     bindFullSettingsAppearance();
+
+    // Full Settings - Reading section bindings
+    bindFullSettingsReading();
   }
 
   function bindFullSettingsAppearance() {
@@ -395,6 +398,183 @@ const App = (() => {
       const key = input.dataset.customColor;
       if (colors[key]) input.value = colors[key];
     });
+  }
+
+  function bindFullSettingsReading() {
+    // Font size stepper
+    const decBtn = document.getElementById('full-font-decrease');
+    const incBtn = document.getElementById('full-font-increase');
+    if (decBtn && typeof ReaderSettings !== 'undefined') {
+      decBtn.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.fontSize > 12) {
+          ReaderSettings.setSetting('fontSize', s.fontSize - 2);
+        }
+      });
+    }
+    if (incBtn && typeof ReaderSettings !== 'undefined') {
+      incBtn.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.fontSize < 36) {
+          ReaderSettings.setSetting('fontSize', s.fontSize + 2);
+        }
+      });
+    }
+
+    // Font family grid
+    document.querySelectorAll('#reading-panel .font-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (typeof ReaderSettings !== 'undefined') {
+          ReaderSettings.setSetting('fontFamily', opt.dataset.font);
+        }
+      });
+    });
+
+    // Text alignment
+    document.querySelectorAll('#reading-panel [data-alignment]').forEach(option => {
+      option.addEventListener('click', () => {
+        if (typeof ReaderSettings !== 'undefined') {
+          ReaderSettings.setSetting('alignment', option.dataset.alignment);
+        }
+      });
+    });
+
+    // Line spacing slider
+    const spacingSlider = document.getElementById('full-spacing-slider');
+    if (spacingSlider && typeof ReaderSettings !== 'undefined') {
+      spacingSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        ReaderSettings.setSetting('lineHeight', val);
+      });
+    }
+
+    // Page margins slider
+    const marginSlider = document.getElementById('full-margin-slider');
+    if (marginSlider && typeof ReaderSettings !== 'undefined') {
+      marginSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        ReaderSettings.setSetting('margin', val);
+      });
+    }
+
+    // Flow mode buttons
+    const flowPaginated = document.getElementById('full-flow-paginated-btn');
+    const flowScrolled = document.getElementById('full-flow-scrolled-btn');
+    if (flowPaginated && typeof ReaderSettings !== 'undefined') {
+      flowPaginated.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.flow !== 'paginated') {
+          ReaderSettings.setSetting('flow', 'paginated');
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
+            EpubLoader.reRender();
+          }
+        }
+      });
+    }
+    if (flowScrolled && typeof ReaderSettings !== 'undefined') {
+      flowScrolled.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.flow !== 'scrolled') {
+          ReaderSettings.setSetting('flow', 'scrolled');
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
+            EpubLoader.reRender();
+          }
+        }
+      });
+    }
+
+    // Spread buttons
+    const spreadAuto = document.getElementById('full-spread-auto-btn');
+    const spreadSingle = document.getElementById('full-spread-single-btn');
+    if (spreadAuto && typeof ReaderSettings !== 'undefined') {
+      spreadAuto.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.spread !== 'auto') {
+          ReaderSettings.setSetting('spread', 'auto');
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
+            EpubLoader.reRender();
+          }
+        }
+      });
+    }
+    if (spreadSingle && typeof ReaderSettings !== 'undefined') {
+      spreadSingle.addEventListener('click', () => {
+        const s = ReaderSettings.getSettings();
+        if (s.spread !== 'none') {
+          ReaderSettings.setSetting('spread', 'none');
+          if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) {
+            EpubLoader.reRender();
+          }
+        }
+      });
+    }
+
+    // Reset reading preferences button
+    const resetButton = document.getElementById('full-reset-reader-settings-btn');
+    if (resetButton && typeof ReaderSettings !== 'undefined') {
+      resetButton.addEventListener('click', () => {
+        ReaderSettings.setSetting('fontSize', 18);
+        ReaderSettings.setSetting('fontFamily', 'Cormorant Garamond');
+        ReaderSettings.setSetting('alignment', 'left');
+        ReaderSettings.setSetting('lineHeight', 1.6);
+        ReaderSettings.setSetting('margin', 10);
+        ReaderSettings.setSetting('flow', 'paginated');
+        ReaderSettings.setSetting('spread', 'auto');
+        if (typeof EpubLoader !== 'undefined' && EpubLoader.isLoaded()) EpubLoader.reRender();
+      });
+    }
+
+    // Sync UI when Full Settings Reading panel is opened
+    const readingNavBtn = document.querySelector('[data-section="reading"]');
+    if (readingNavBtn) {
+      readingNavBtn.addEventListener('click', syncFullSettingsReadingUI);
+    }
+  }
+
+  function syncFullSettingsReadingUI() {
+    if (typeof ReaderSettings === 'undefined') return;
+
+    const s = ReaderSettings.getSettings();
+
+    // Font size display
+    const fontSizeDisplay = document.getElementById('full-font-size-display');
+    if (fontSizeDisplay) fontSizeDisplay.textContent = `${s.fontSize}px`;
+
+    // Font family active state
+    document.querySelectorAll('#reading-panel .font-opt').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.font === s.fontFamily);
+    });
+
+    // Text alignment active state
+    document.querySelectorAll('#reading-panel [data-alignment]').forEach(option => {
+      const isActive = option.dataset.alignment === s.alignment;
+      option.classList.toggle('active', isActive);
+      option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    // Line spacing slider & value
+    const spacingSlider = document.getElementById('full-spacing-slider');
+    const spacingVal = document.getElementById('full-spacing-val');
+    if (spacingSlider) spacingSlider.value = s.lineHeight;
+    if (spacingVal) spacingVal.textContent = s.lineHeight.toFixed(1);
+
+    // Page margins slider & value
+    const marginSlider = document.getElementById('full-margin-slider');
+    const marginVal = document.getElementById('full-margin-val');
+    if (marginSlider) marginSlider.value = s.margin;
+    if (marginVal) marginVal.textContent = `${s.margin}%`;
+
+    // Flow buttons
+    const flowPaginated = document.getElementById('full-flow-paginated-btn');
+    const flowScrolled = document.getElementById('full-flow-scrolled-btn');
+    if (flowPaginated) flowPaginated.classList.toggle('active', s.flow === 'paginated');
+    if (flowScrolled) flowScrolled.classList.toggle('active', s.flow === 'scrolled');
+
+    // Spread buttons
+    const spreadAuto = document.getElementById('full-spread-auto-btn');
+    const spreadSingle = document.getElementById('full-spread-single-btn');
+    if (spreadAuto) spreadAuto.classList.toggle('active', s.spread === 'auto');
+    if (spreadSingle) spreadSingle.classList.toggle('active', s.spread === 'none');
   }
 
   function toggleDrawer(panel) {

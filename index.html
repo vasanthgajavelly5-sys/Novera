@@ -846,7 +846,118 @@
           </section>
           <section id="reading-panel" class="full-settings-section" aria-labelledby="reading-heading" hidden>
             <h3 id="reading-heading">Reading</h3>
-            <p class="full-settings-placeholder">Reading experience settings will go here.</p>
+
+            <section class="settings-group" aria-labelledby="reading-text-heading">
+              <div class="settings-section-heading">
+                <div class="setting-section-title" id="reading-text-heading">Reading text</div>
+                <p>Choose a comfortable typeface and text size.</p>
+              </div>
+              <div class="setting-row setting-control-row">
+                <div class="setting-label">Font size<span>Adjust the size of the page text.</span></div>
+                <div class="font-stepper" aria-label="Font size">
+                  <button class="stepper-btn" id="full-font-decrease" type="button" aria-label="Decrease font size">-</button>
+                  <span class="stepper-val" id="full-font-size-display">18px</span>
+                  <button class="stepper-btn" id="full-font-increase" type="button" aria-label="Increase font size">+</button>
+                </div>
+              </div>
+              <div class="font-grid" aria-label="Font family">
+                <button class="font-opt active" data-font="Cormorant Garamond" style="font-family:'Cormorant Garamond',serif">
+                  Cormorant
+                  <span class="font-opt-name">Refined Book Serif</span>
+                </button>
+                <button class="font-opt" data-font="Lora" style="font-family:'Lora',serif">
+                  Lora
+                  <span class="font-opt-name">Editorial Serif</span>
+                </button>
+                <button class="font-opt" data-font="Playfair Display" style="font-family:'Playfair Display',serif">
+                  Playfair
+                  <span class="font-opt-name">Classic Display</span>
+                </button>
+                <button class="font-opt" data-font="Inter" style="font-family:'Inter',sans-serif">
+                  Inter
+                  <span class="font-opt-name">Modern Sans</span>
+                </button>
+                <button class="font-opt" data-font="Georgia" style="font-family:Georgia,serif">
+                  Georgia
+                  <span class="font-opt-name">Literary Serif</span>
+                </button>
+                <button class="font-opt" data-font="JetBrains Mono" style="font-family:'JetBrains Mono',monospace">
+                  Mono
+                  <span class="font-opt-name">Technical Code</span>
+                </button>
+                <button class="font-opt" data-font="Original" style="font-family:serif">
+                  Publisher
+                  <span class="font-opt-name">Original EPUB</span>
+                </button>
+              </div>
+              <div class="setting-subheading">Text alignment</div>
+              <div class="alignment-grid" role="group" aria-label="Text alignment">
+                <button class="alignment-opt active" data-alignment="left" type="button" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h11M4 14h16M4 18h11"/></svg>
+                  <span>Left</span>
+                </button>
+                <button class="alignment-opt" data-alignment="center" type="button" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg>
+                  <span>Center</span>
+                </button>
+                <button class="alignment-opt" data-alignment="right" type="button" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 10h11M4 14h16M9 18h11"/></svg>
+                  <span>Right</span>
+                </button>
+                <button class="alignment-opt" data-alignment="justify" type="button" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                  <span>Justify</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="settings-group" aria-labelledby="layout-heading">
+              <div class="settings-section-heading">
+                <div class="setting-section-title" id="layout-heading">Page layout</div>
+                <p>Control how pages flow and how much space they use.</p>
+              </div>
+              <div class="layout-grid">
+                <button class="layout-opt active" data-flow="paginated" id="full-flow-paginated-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Paginated</span>
+                </button>
+                <button class="layout-opt" data-flow="scrolled" id="full-flow-scrolled-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                  <span>Continuous</span>
+                </button>
+              </div>
+              <div class="setting-subheading">Columns</div>
+              <div class="layout-grid">
+                <button class="layout-opt active" data-spread="auto" id="full-spread-auto-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                  <span>Auto Spread</span>
+                </button>
+                <button class="layout-opt" data-spread="none" id="full-spread-single-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                  <span>Single Page</span>
+                </button>
+              </div>
+              <div class="setting-slider-row">
+                <div class="setting-row">
+                <div class="setting-label">
+                  Line spacing
+                  <span id="full-spacing-val">1.6</span>
+                </div>
+                </div>
+                <input type="range" id="full-spacing-slider" min="1.2" max="2.4" step="0.1" value="1.6" class="glass-slider" aria-label="Line spacing">
+              </div>
+              <div class="setting-slider-row">
+                <div class="setting-row">
+                <div class="setting-label">
+                  Page margins
+                  <span id="full-margin-val">10%</span>
+                </div>
+                </div>
+                <input type="range" id="full-margin-slider" min="2" max="24" step="2" value="10" class="glass-slider" aria-label="Page margins">
+              </div>
+            </section>
+
+            <button class="btn btn-ghost reset-settings-btn" id="full-reset-reader-settings-btn" type="button">Reset reading preferences</button>
           </section>
           <section id="library-panel" class="full-settings-section" aria-labelledby="library-heading" hidden>
             <h3 id="library-heading">Library</h3>
