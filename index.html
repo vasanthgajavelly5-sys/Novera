@@ -727,6 +727,31 @@
     </div>
   </div>
 
+  <!-- Add to Collection Modal -->
+  <div id="add-to-collection-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="add-to-collection-title">
+    <div class="modal-box collection-modal-box">
+      <div class="modal-header">
+        <div>
+          <h2 id="add-to-collection-title">Add to collection</h2>
+          <p class="modal-subtitle">Choose collections for this book.</p>
+        </div>
+        <button class="btn btn-glass icon-btn" id="close-add-to-collection-btn" type="button" aria-label="Close add to collection dialog">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body collection-modal-body">
+        <div id="add-to-collection-list" class="add-to-collection-list" role="listbox" aria-label="Collections">
+          <!-- Collections populated dynamically -->
+        </div>
+        <div class="add-to-collection-divider" role="separator"></div>
+        <button class="btn btn-glass add-to-collection-new" id="add-to-collection-new-btn" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>+ New collection…</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Add Note to Highlight Modal -->
   <div id="note-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
     <div class="modal-box">
@@ -833,10 +858,6 @@
     <div class="ctx-item" id="ctx-collection" role="menuitem">
       <span>Add to collection</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div id="ctx-collection-submenu" class="ctx-submenu hidden" role="menu" aria-label="Collection actions">
-      <div class="ctx-item" data-collection="__new__" role="menuitem">+ New collection…</div>
-      <div class="ctx-sep" role="separator"></div>
     </div>
     <div class="ctx-sep" role="separator"></div>
     <div class="ctx-item danger" id="ctx-delete" role="menuitem">

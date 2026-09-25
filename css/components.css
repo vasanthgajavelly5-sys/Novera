@@ -552,26 +552,68 @@
   margin: var(--sp-1);
 }
 
-/* Context Submenu */
-.ctx-submenu {
-  position: fixed;
-  z-index: calc(var(--z-modal) + 11);
-  background: var(--bg-elevated);
+/* Add to Collection Modal */
+.add-to-collection-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: var(--sp-3) 0;
+}
+.add-to-collection-empty {
+  padding: var(--sp-4);
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+.add-to-collection-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.add-to-collection-item:hover {
+  background: var(--bg-hover);
+}
+.add-to-collection-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.add-to-collection-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+.add-to-collection-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--sp-2) 0;
+}
+.add-to-collection-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--border-default);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-xl);
-  padding: var(--sp-1);
-  min-width: 180px;
-  animation: ctxIn var(--dur-fast) var(--ease-out);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
 }
-.ctx-submenu .ctx-item {
-  padding: 8px var(--sp-3);
-  font-size: 0.8125rem;
+.add-to-collection-new:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
 }
-.ctx-submenu .ctx-separator {
-  margin: 4px var(--sp-1);
+.add-to-collection-new svg {
+  flex-shrink: 0;
 }
 
 /* ── Modal ───────────────────────────────────────────────── */

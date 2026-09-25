@@ -828,6 +828,59 @@ const Library = (() => {
     });
   }
 
+  function openAddToCollectionModal() {
+    if (!activeContextBook) return;
+    const modal = document.getElementById('add-to-collection-modal');
+    const list = document.getElementById('add-to-collection-list');
+    if (!modal || !list) return;
+
+    // Populate collections
+    list.innerHTML = '';
+    if (collections.length === 0) {
+      list.innerHTML = '<div class="add-to-collection-empty">No collections yet. Create one below.</div>';
+    } else {
+      collections.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(collection => {
+        const isIncluded = activeContextBook.collectionIds?.includes(collection.id);
+        const item = document.createElement('div');
+        item.className = 'add-to-collection-item';
+        item.dataset.collectionId = collection.id;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', isIncluded ? 'true' : 'false');
+        item.innerHTML = `
+          <input type="checkbox" class="add-to-collection-checkbox" ${isIncluded ? 'checked' : ''} aria-hidden="true">
+          <span class="add-to-collection-name">${Utils.escapeHTML(collection.name)}</span>
+        `;
+        item.addEventListener('click', async () => {
+          const checkbox = item.querySelector('.add-to-collection-checkbox');
+          checkbox.checked = !checkbox.checked;
+          item.setAttribute('aria-selected', checkbox.checked ? 'true' : 'false');
+          const included = checkbox.checked;
+          activeContextBook.collectionIds = await NoveraDB.setBookCollection(activeContextBook.id, collection.id, included);
+          await loadAndRenderBooks();
+        });
+        list.appendChild(item);
+      });
+    }
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+    };
+
+    // Close handlers
+    modal.querySelector('#close-add-to-collection-btn')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // New collection button opens the create modal
+    modal.querySelector('#add-to-collection-new-btn')?.addEventListener('click', () => {
+      closeModal();
+      openCollectionModal();
+    });
+
+    modal.classList.remove('hidden');
+  }
+
   async function createCollection(closeModal) {
     const input = document.getElementById('collection-name-input');
     const trimmed = input?.value.trim() || '';
@@ -1015,43 +1068,9 @@ const Library = (() => {
       });
     }
 
-    ctxCollection?.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const submenu = document.getElementById('ctx-collection-submenu');
-      if (!submenu) return;
+    ctxCollection?.addEventListener('click', () => {
       if (!activeContextBook) return;
-
-      // Populate submenu with collections
-      const separator = submenu.querySelector('.ctx-sep');
-      submenu.querySelectorAll('.ctx-item[data-collection]').forEach(el => el.remove());
-
-      if (collections.length === 0) {
-        const newItem = document.createElement('div');
-        newItem.className = 'ctx-item';
-        newItem.dataset.collection = '__new__';
-        newItem.textContent = '+ New collection…';
-        submenu.insertBefore(newItem, separator);
-      } else {
-        collections.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(collection => {
-          const item = document.createElement('div');
-          item.className = 'ctx-item';
-          item.dataset.collection = collection.id;
-          const isIncluded = activeContextBook.collectionIds?.includes(collection.id);
-          item.textContent = `${isIncluded ? '✓ ' : ''}${collection.name}`;
-          submenu.insertBefore(item, separator);
-        });
-        const newItem = document.createElement('div');
-        newItem.className = 'ctx-item';
-        newItem.dataset.collection = '__new__';
-        newItem.textContent = '+ New collection…';
-        submenu.insertBefore(newItem, separator);
-      }
-
-      // Position submenu to the right of parent
-      const rect = event.currentTarget.getBoundingClientRect();
-      submenu.style.left = `${rect.right + 4}px`;
-      submenu.style.top = `${rect.top}px`;
-      submenu.classList.remove('hidden');
+      openAddToCollectionModal();
     });
 
     // Handle submenu item clicks
