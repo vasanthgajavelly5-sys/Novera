@@ -144,6 +144,71 @@ const Library = (() => {
     continueSection.classList.add('visible');
   }
 
+  async function hydrateChapterCount(book, card) {
+    if (!book || Number.isFinite(Number(book.chapterCount)) || !window.ePub) return;
+    try {
+      let epubData = book.fileData;
+      if (!epubData && book.storageId && window.noveraDesktop?.readManagedBook) {
+        epubData = await window.noveraDesktop.readManagedBook(book.storageId, book.fingerprint, book.fileSize);
+      }
+      if (!epubData) return;
+
+      const tempBook = ePub(epubData);
+      let count = 0;
+      try {
+        const navigation = await tempBook.loaded.navigation;
+        const flatten = (items) => {
+          let total = 0;
+          for (const item of (items || [])) {
+            total += 1;
+            if (item.subitems?.length) total += flatten(item.subitems);
+          }
+          return total;
+        };
+        count = flatten(navigation?.toc);
+        if (!count) {
+          await tempBook.ready;
+          count = tempBook.spine?.spineItems?.length || 0;
+        }
+      } finally {
+        tempBook.destroy();
+      }
+
+      if (!count) return;
+      book.chapterCount = count;
+      await NoveraDB.updateBookMetadata(book.id, { chapterCount: count });
+
+      const chapterEl = card?.querySelector('.card-chapter-count');
+      if (chapterEl) {
+        chapterEl.textContent = `${count} chapter${count === 1 ? '' : 's'}`;
+        chapterEl.classList.remove('is-loading');
+      }
+    } catch (error) {
+      console.warn(`Could not determine chapter count for ${book.title || book.id}:`, error);
+    }
+  }
+
+  function observeMissingChapterCounts(books, grid) {
+    if (!isListView || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const card = entry.target;
+        observer.unobserve(card);
+        const book = books.find(item => item.id === card.dataset.bookId);
+        if (book && !Number.isFinite(Number(book.chapterCount))) {
+          hydrateChapterCount(book, card);
+        }
+      });
+    }, { root: null, rootMargin: '160px 0px' });
+
+    grid.querySelectorAll('.book-card[data-book-id]').forEach(card => {
+      const book = books.find(item => item.id === card.dataset.bookId);
+      if (book && !Number.isFinite(Number(book.chapterCount))) observer.observe(card);
+    });
+  }
+
   function renderBookCards(books) {
     const grid = document.getElementById('books-grid');
     if (!grid) return;
@@ -153,6 +218,7 @@ const Library = (() => {
     books.forEach(book => {
       const card = document.createElement('div');
       card.className = 'book-card';
+      card.dataset.bookId = book.id;
       card.setAttribute('role', 'listitem');
       card.setAttribute('tabindex', '0');
 
@@ -180,6 +246,7 @@ const Library = (() => {
           <div class="card-title" title="${Utils.escapeHTML(book.title)}">${Utils.escapeHTML(book.title)}</div>
           <div class="card-author">${Utils.escapeHTML(book.author || 'Unknown')}</div>
         </div>
+        ${isListView ? `<div class="card-chapter-count ${Number.isFinite(Number(book.chapterCount)) ? '' : 'is-loading'}">${Number.isFinite(Number(book.chapterCount)) ? `${book.chapterCount} chapter${Number(book.chapterCount) === 1 ? '' : 's'}` : 'Chapters'}</div>` : ''}
       `;
 
       const favoriteButton = card.querySelector('.card-fav');
@@ -221,6 +288,11 @@ const Library = (() => {
 
       grid.appendChild(card);
     });
+
+    if (isListView) {
+      // Only calculate missing counts as rows approach the viewport. This keeps large libraries responsive.
+      observeMissingChapterCounts(books, grid);
+    }
   }
 
   function updateFavoriteCard(card, isFavorite) {
@@ -547,6 +619,22 @@ const Library = (() => {
       }
     } catch (e) {
       console.warn('Metadata load error, using defaults:', e);
+    }
+
+    let chapterCount = null;
+    try {
+      const navigation = await tempBook.loaded.navigation;
+      const flatten = (items) => {
+        let total = 0;
+        for (const item of (items || [])) {
+          total += 1;
+          if (item.subitems?.length) total += flatten(item.subitems);
+        }
+        return total;
+      };
+      chapterCount = flatten(navigation?.toc) || null;
+    } catch (_) {
+      chapterCount = null;
     } finally {
       tempBook.destroy();
     }
@@ -556,6 +644,7 @@ const Library = (() => {
       title,
       author,
       description,
+      chapterCount,
       coverDataUrl,
       ...(window.noveraDesktop ? {} : { fileData: arrayBuffer }),
       originalName: fileName,

@@ -786,6 +786,18 @@
 .books-grid.list-view .card-meta     { flex: 1; padding: 0; min-width: 0; }
 .books-grid.list-view .card-title    { -webkit-line-clamp: 1; font-size: 0.9375rem; }
 .books-grid.list-view .card-author   { margin-top: 2px; }
+.books-grid.list-view .card-chapter-count {
+  flex: 0 0 96px;
+  min-width: 96px;
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.books-grid.list-view .card-chapter-count.is-loading {
+  opacity: 0.55;
+}
 .books-grid.list-view .card-progress-list {
   display: flex;
   align-items: center;

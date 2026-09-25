@@ -181,6 +181,22 @@ const NoveraDB = (() => {
       });
     },
 
+    async updateBookMetadata(id, fields) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction('books', 'readwrite');
+        const store = transaction.objectStore('books');
+        const request = store.get(id);
+        request.onsuccess = () => {
+          if (!request.result) return resolve(null);
+          Object.assign(request.result, fields || {});
+          store.put(request.result);
+          resolve(request.result);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    },
+
     async updateFavorite(id, favorite) {
       const db = await openDB();
       return new Promise((resolve, reject) => {
